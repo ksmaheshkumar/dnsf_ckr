@@ -1,0 +1,28 @@
+include ~/toolsets/gcc/gcc-app.hls
+
+var sources type list;
+var includes type list;
+var cflags type list;
+var libraries type list;
+var ldflags type list;
+
+project dnsf_ckr : toolset "gcc-c-app" : $sources,
+                                         $includes,
+                                         $cflags,
+                                         $libraries,
+                                         $ldflags,
+                                         "dnsf_ckr";
+
+dnsf_ckr.prologue() {
+    hefesto.sys.echo("[building dnsf_ckr...]\n");
+    $sources.ls(".*\\.c$");
+    $cflags.add_item("-Wall");
+}
+
+dnsf_ckr.epilogue() {
+    if (hefesto.sys.last_forge_result() == 0) {
+        hefesto.sys.echo("[dnsf_ckr was built]\n");
+    } else {
+        hefesto.sys.echo("[dnsf_ckr seems fucked]\n");
+    }
+}
