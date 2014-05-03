@@ -1,4 +1,4 @@
-include ~/toolsets/gcc/gcc-app.hls
+include ~/toolsets/gcc/gcc-app.hsl
 
 var sources type list;
 var includes type list;

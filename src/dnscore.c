@@ -57,6 +57,99 @@ dnspktctx *unpack_dns_data(const unsigned char *raw_buf, size_t bufsz) {
     return pkt;
 }
 
-unsigned char *pack_dns_data(dnspktctx dnspkt) {
-    return NULL;
+size_t pack_dns_data(unsigned char **output, dnspktctx pkt) {
+    unsigned char *pdata = *output;
+    unsigned char *p;
+    pdata = (unsigned char *) malloc(11 + pkt.qdcount +
+                                     pkt.ancount + pkt.nscount +
+                                     pkt.arcount + 255);
+    p = pdata;
+    *p = ((pkt.id & 0xff00) >> 8);
+    p++;
+    *p = (pkt.id & 0x00ff);
+    p++;
+    *p = pkt.qr;
+    *p = (*p << 7);
+    *p = (*p | pkt.opcode);
+    *p |= ((pkt.aatcrdra & 0x0e) >> 1);
+    p++;
+    *p = (pkt.aatcrdra & 0x1) << 7;
+    *p |= pkt.rcode;
+    p++;
+    *p = ((pkt.qdcount & 0xff000000) >> 24);
+    p++;
+    *p = ((pkt.qdcount & 0x00ff0000) >> 16);
+    p++;
+    *p = ((pkt.qdcount & 0x0000ff00) >>  8);
+    p++;
+    *p = (pkt.qdcount & 0x000000ff);
+    p++;
+    *p = ((pkt.ancount & 0xff000000) >> 24);
+    p++;
+    *p = ((pkt.ancount & 0x00ff0000) >> 16);
+    p++;
+    *p = ((pkt.ancount & 0x0000ff00) >>  8);
+    p++;
+    *p = (pkt.ancount & 0x000000ff);
+    p++;
+    *p = ((pkt.nscount & 0xff000000) >> 24);
+    p++;
+    *p = ((pkt.nscount & 0x00ff0000) >> 16);
+    p++;
+    *p = ((pkt.nscount & 0x0000ff00) >>  8);
+    p++;
+    *p = (pkt.nscount & 0x000000ff);
+    p++;
+    *p = ((pkt.arcount & 0xff000000) >> 24);
+    p++;
+    *p = ((pkt.arcount & 0x00ff0000) >> 16);
+    p++;
+    *p = ((pkt.arcount & 0x0000ff00) >>  8);
+    p++;
+    *p = (pkt.arcount & 0x000000ff);
+    p++;
+    if (pkt.qdcount > 0) {
+        *p = strlen((char *)pkt.questionsec.qname);
+        p++;
+        memcpy(p, pkt.questionsec.qname, (size_t)*(p-1));
+        p += *(p-1);
+        *p = ((pkt.questionsec.qtype & 0xff00) >> 8);
+        p++;
+        *p = (pkt.questionsec.qtype & 0x00ff);
+        p++;
+        *p = ((pkt.questionsec.qclass & 0xff00) >> 8);
+        p++;
+        *p = (pkt.questionsec.qclass & 0x00ff);
+        p++;
+    } else {
+        *p = strlen((char *)pkt.rscrecfmt.name);
+        p++;
+        memset(p, 0, 255);
+        memcpy(p, pkt.rscrecfmt.name, (size_t)*(p-1));
+        p++;
+        *p += ((pkt.rscrecfmt.type & 0xff00) >> 8);
+        p++;
+        *p = (pkt.rscrecfmt.type & 0x00ff);
+        p++;
+        *p = ((pkt.rscrecfmt.clss & 0xff00) >> 8);
+        p++;
+        *p = (pkt.rscrecfmt.clss & 0x00ff);
+        p++;
+        *p = ((pkt.rscrecfmt.ttl & 0xff000000) >> 24);
+        p++;
+        *p = ((pkt.rscrecfmt.ttl & 0x00ff0000) >> 16);
+        p++;
+        *p = ((pkt.rscrecfmt.ttl & 0x0000ff00) >>  8);
+        p++;
+        *p = (pkt.rscrecfmt.ttl & 0x000000ff);
+        p++;
+        *p = ((pkt.rscrecfmt.rdlen & 0xff00) >> 8);
+        p++;
+        *p = (pkt.rscrecfmt.rdlen & 0x00ff);
+        p++;
+        memcpy(p, pkt.rscrecfmt.rdata, pkt.rscrecfmt.rdlen);
+        p++;
+    }
+
+    return (p - pdata);
 }

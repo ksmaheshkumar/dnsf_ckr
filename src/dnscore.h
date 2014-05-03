@@ -62,6 +62,6 @@ typedef struct _dnspktctx {
 }dnspktctx;
 
 dnspktctx *unpack_dns_data(const unsigned char *rawbuf, size_t bufsz);
-unsigned char *pack_dns_data(dnspktctx dnspkt);
+size_t pack_dns_data(unsigned char **output, dnspktctx dnspkt);
 
 #endif
