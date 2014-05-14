@@ -2,6 +2,8 @@
 #include "mem.h"
 #include "iputils.h"
 #include <string.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
 
 dnsf_ckr_victims_ctx *add_victim_to_dnsf_ckr_victims_ctx(dnsf_ckr_victims_ctx *victims, const char *name, size_t nsize,
                                                          const char *addr, size_t asize) {
@@ -15,9 +17,9 @@ dnsf_ckr_victims_ctx *add_victim_to_dnsf_ckr_victims_ctx(dnsf_ckr_victims_ctx *v
         p = p->next;
     }
     p->name_size = nsize;
-    p->name = (char *) dnsf_ckr_getmem(nsize);
-    memset(p->name, 0, nsize);
-    strncpy(p->name, name, nsize - 1);
+    p->name = (char *) dnsf_ckr_getmem(nsize + 1);
+    memset(p->name, 0, nsize + 1);
+    strncpy(p->name, name, nsize);
     p->addr = dnsf_ckr_ip2num(addr, asize);
     return head;
 }
@@ -47,8 +49,7 @@ void del_dnsf_ckr_victims_ctx(dnsf_ckr_victims_ctx *victims) {
 
 // dnsf_ckr_servers_ctx stuff
 
-dnsf_ckr_servers_ctx *add_server_to_dnsf_ckr_servers_ctx(dnsf_ckr_servers_ctx *servers, const char *name, size_t nsize,
-                                                         const char *addr, size_t asize) {
+dnsf_ckr_servers_ctx *add_server_to_dnsf_ckr_servers_ctx(dnsf_ckr_servers_ctx *servers, const char *addr, size_t asize) {
     dnsf_ckr_servers_ctx *head = servers, *p;
     if (head == NULL) {
         new_dnsf_ckr_servers_ctx(head);
@@ -58,10 +59,10 @@ dnsf_ckr_servers_ctx *add_server_to_dnsf_ckr_servers_ctx(dnsf_ckr_servers_ctx *s
         new_dnsf_ckr_servers_ctx(p->next);
         p = p->next;
     }
-    p->name_size = nsize;
-    p->name = (char *) dnsf_ckr_getmem(nsize);
-    memset(p->name, 0, nsize);
-    strncpy(p->name, name, nsize-1);
+//    p->name_size = nsize;
+//    p->name = (char *) dnsf_ckr_getmem(nsize);
+//    memset(p->name, 0, nsize);
+//    strncpy(p->name, name, nsize-1);
     p->addr = dnsf_ckr_ip2num(addr, asize);
     return head;
 }
@@ -72,10 +73,11 @@ dnsf_ckr_servers_ctx *get_dnsf_ckr_servers_ctx_tail(dnsf_ckr_servers_ctx *server
     return p;
 }
 
-dnsf_ckr_servers_ctx *get_dnsf_ckr_servers_ctx_name(const char *name, dnsf_ckr_servers_ctx *servers) {
+dnsf_ckr_servers_ctx *get_dnsf_ckr_servers_ctx_addr(const char *addr, dnsf_ckr_servers_ctx *servers) {
     dnsf_ckr_servers_ctx *p;
+    in_addr_t naddr = inet_addr(addr);
     for (p = servers; p; p = p->next) {
-        if (strcmp(name, p->name) == 0) return p;
+        if (p->addr == naddr) return p;
     }
     return NULL;
 }
@@ -84,7 +86,7 @@ void del_dnsf_ckr_servers_ctx(dnsf_ckr_servers_ctx *servers) {
     dnsf_ckr_servers_ctx *t, *p;
     for (t = p = servers; t; p = t) {
         t = p->next;
-        if (p->name != NULL) free(p->name);
+//        if (p->name != NULL) free(p->name);
         free(p);
     }
 }
@@ -103,9 +105,9 @@ dnsf_ckr_hostnames_ctx *add_host_to_dnsf_ckr_hostnames_ctx(dnsf_ckr_hostnames_ct
         p = p->next;
     }
     p->name_size = nsize;
-    p->name = (char *) dnsf_ckr_getmem(nsize);
-    memset(p->name, 0, nsize);
-    strncpy(p->name, name, nsize - 1);
+    p->name = (char *) dnsf_ckr_getmem(nsize + 1);
+    memset(p->name, 0, nsize + 1);
+    strncpy(p->name, name, nsize);
     p->addr = dnsf_ckr_ip2num(addr, asize);
     return head;
 }
@@ -133,3 +135,75 @@ void del_dnsf_ckr_hostnames_ctx(dnsf_ckr_hostnames_ctx *hostnames) {
     }
 }
 
+dnsf_ckr_hostnames_set_ctx *add_set_to_dnsf_ckr_hostnames_set_ctx(dnsf_ckr_hostnames_set_ctx *set, const char *name, size_t nsize) {
+    dnsf_ckr_hostnames_set_ctx *head = set, *p;
+    if (head != NULL) {
+        p = get_dnsf_ckr_hostnames_set_ctx_tail(set);
+        new_dnsf_ckr_hostnames_set_ctx(p->next);
+        p = p->next;
+    } else {
+        new_dnsf_ckr_hostnames_set_ctx(head);
+        p = head;
+    }
+    p->name = (char *) dnsf_ckr_getmem(nsize + 1);
+    memset(p->name, 0, nsize + 1);
+    strncpy(p->name, name, nsize);
+    return head;
+}
+
+dnsf_ckr_hostnames_set_ctx *get_dnsf_ckr_hostnames_set_ctx_tail(dnsf_ckr_hostnames_set_ctx *set) {
+    dnsf_ckr_hostnames_set_ctx *s;
+    for (s = set; s->next; s = s->next);
+    return s;
+}
+
+dnsf_ckr_hostnames_set_ctx *get_dnsf_ckr_hostnames_set_ctx_set(const char *name, dnsf_ckr_hostnames_set_ctx *set) {
+    dnsf_ckr_hostnames_set_ctx *s;
+    for (s = set; s; s = s->next) {
+        if (strcmp(name, s->name) == 0) {
+            return s;
+        }
+    }
+    return NULL;
+}
+
+void del_dnsf_ckr_hostnames_set_ctx(dnsf_ckr_hostnames_set_ctx *set) {
+    dnsf_ckr_hostnames_set_ctx *s, *t;
+    for (s = t = set; t; s = t) {
+        t = s->next;
+        if (s->name != NULL) free(s->name);
+        if (s->hostnames != NULL) del_dnsf_ckr_hostnames_ctx(s->hostnames);
+        free(s);
+    }
+}
+
+dnsf_ckr_fakenameserver_ctx *add_faking_to_dnsf_ckr_fakenameserver_ctx(dnsf_ckr_fakenameserver_ctx *nameserver,
+                                                                       dnsf_ckr_victims_ctx *victims,
+                                                                       dnsf_ckr_hostnames_set_ctx *hset) {
+    dnsf_ckr_fakenameserver_ctx *head = nameserver, *p;
+    if (head == NULL) {
+        new_dnsf_ckr_fakenameserver_ctx(head);
+        p = head;
+    } else {
+        p = get_dnsf_ckr_fakenameserver_ctx_tail(head);
+        new_dnsf_ckr_fakenameserver_ctx(p->next);
+        p = p->next;
+    }
+    p->with = victims;
+    p->mess_up = hset;
+    return head;
+}
+
+dnsf_ckr_fakenameserver_ctx *get_dnsf_ckr_fakenameserver_ctx_tail(dnsf_ckr_fakenameserver_ctx *nameserver) {
+    dnsf_ckr_fakenameserver_ctx *p;
+    for (p = nameserver; p->next; p = p->next);
+    return p;
+}
+
+void del_dnsf_ckr_fakenameserver_ctx(dnsf_ckr_fakenameserver_ctx *nameserver) {
+    dnsf_ckr_fakenameserver_ctx *p, *t;
+    for (t = p = nameserver; t; p = t) {
+        t = p->next;
+        free(p);
+    }
+}
