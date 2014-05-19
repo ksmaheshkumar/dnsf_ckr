@@ -31,13 +31,13 @@
 
 #define DNSF_CKR_QCLASS_ANY     255
 
-struct dnspktqsecctx {
+struct dnsf_ckr_pktqsecctx {
     unsigned char qname[0xff];
     unsigned short qtype;
     unsigned short qclass;
 };
 
-struct dnspktrscrecfmtctx {
+struct dnsf_ckr_pktrscrecfmtctx {
     unsigned char name[0xff];
     unsigned short type;
     unsigned short clss;
@@ -46,7 +46,7 @@ struct dnspktrscrecfmtctx {
     unsigned char *rdata;
 };
 
-typedef struct _dnspktctx {
+typedef struct _dnsf_ckr_pktctx {
     unsigned short id;
     unsigned char qr;
     unsigned char opcode;
@@ -57,11 +57,11 @@ typedef struct _dnspktctx {
     unsigned short ancount;
     unsigned short nscount;
     unsigned short arcount;
-    struct dnspktqsecctx questionsec;
-    struct dnspktrscrecfmtctx rscrecfmt;
-}dnspktctx;
+    struct dnsf_ckr_pktqsecctx questionsec;
+    struct dnsf_ckr_pktrscrecfmtctx rscrecfmt;
+}dnsf_ckr_pktctx;
 
-dnspktctx *unpack_dns_data(const unsigned char *rawbuf, size_t bufsz);
-size_t pack_dns_data(unsigned char **output, dnspktctx dnspkt);
+dnsf_ckr_pktctx *unpack_dns_data(const unsigned char *rawbuf, size_t bufsz);
+size_t pack_dns_data(unsigned char **output, dnsf_ckr_pktctx dnspkt);
 
 #endif

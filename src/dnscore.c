@@ -1,16 +1,17 @@
 #include "dnscore.h"
+#include "mem.h"
 #include <string.h>
 
-#define new_dnspktctx(p) { p = (dnspktctx *) malloc(sizeof(dnspktctx));\
-                           if (p == NULL) exit(1); }
+#define new_dnsf_ckr_pktctx(p) { p = (dnsf_ckr_pktctx *) dnsf_ckr_getmem(sizeof(dnsf_ckr_pktctx));\
+                                 if (p == NULL) exit(1); }
 
 #define sf_i(i, s) ( (i) % (s) )
 
-dnspktctx *unpack_dns_data(const unsigned char *raw_buf, size_t bufsz) {
-    dnspktctx *pkt = NULL;
+dnsf_ckr_pktctx *unpack_dns_data(const unsigned char *raw_buf, size_t bufsz) {
+    dnsf_ckr_pktctx *pkt = NULL;
     size_t c_off;
     if (raw_buf == NULL || bufsz < 11) return NULL;
-    new_dnspktctx(pkt);
+    new_dnsf_ckr_pktctx(pkt);
     pkt->id = (((unsigned short)raw_buf[0]) << 8) | raw_buf[1];
     pkt->qr = (raw_buf[2] & 0x80) >> 7;
     pkt->opcode = (raw_buf[2] & 0x74) >> 4;
@@ -57,7 +58,7 @@ dnspktctx *unpack_dns_data(const unsigned char *raw_buf, size_t bufsz) {
     return pkt;
 }
 
-size_t pack_dns_data(unsigned char **output, dnspktctx pkt) {
+size_t pack_dns_data(unsigned char **output, dnsf_ckr_pktctx pkt) {
     unsigned char *pdata = *output;
     unsigned char *p;
     pdata = (unsigned char *) malloc(11 + pkt.qdcount +
