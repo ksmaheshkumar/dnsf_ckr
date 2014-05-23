@@ -12,7 +12,7 @@ struct dnsf_ckr_udp_header {
     size_t payload_size;
 };
 
-void dnsf_ckr_parse_udp_dgram(struct dnsf_ckr_udp_header *udph, const char *buf, size_t bsize);
+struct dnsf_ckr_udp_header *dnsf_ckr_parse_udp_dgram(const char *buf, const size_t bsize);
 
 unsigned char *dnsf_ckr_mk_udp_dgram(size_t *dsize, const struct dnsf_ckr_udp_header udph);
 

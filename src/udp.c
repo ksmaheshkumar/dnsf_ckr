@@ -8,13 +8,15 @@
                     return NULL;\
                }
 
-void dnsf_ckr_parse_udp_dgram(struct dnsf_ckr_udp_header *udph, const char *buf, size_t bsize) {
+struct dnsf_ckr_udp_header *dnsf_ckr_parse_udp_dgram(const char *buf, const size_t bsize) {
+    struct dnsf_ckr_udp_header *udph = NULL;
     if (udph == NULL || buf == NULL) {
-        return;
+        return NULL;
     }
+    udph = (struct dnsf_ckr_udp_header *) dnsf_ckr_getmem(sizeof(struct dnsf_ckr_udp_header));
     memset(udph, 0, sizeof(struct dnsf_ckr_udp_header));
     if (bsize == 0) {
-        return;
+        return NULL;
     }
     udph->src = (unsigned short)(buf[0] << 8) | (unsigned short)(buf[1]);
     udph->dest = (unsigned short)(buf[2] << 8) | (unsigned short)(buf[3]);
@@ -23,6 +25,7 @@ void dnsf_ckr_parse_udp_dgram(struct dnsf_ckr_udp_header *udph, const char *buf,
     udph->payload_size = bsize - 8;
     udph->payload = (unsigned char *) dnsf_ckr_getmem(udph->payload_size);
     memcpy(udph->payload, buf, udph->payload_size);
+    return udph;
 }
 
 unsigned char *dnsf_ckr_mk_udp_dgram(size_t *dsize, const struct dnsf_ckr_udp_header udph) {

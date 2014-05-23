@@ -24,8 +24,10 @@ struct dnsf_ckr_ip_header {
 
 unsigned short dnsf_ckr_compute_chsum(unsigned char *data, size_t dsize);
 
-void dnsf_ckr_parse_ip_dgram(struct dnsf_ckr_ip_header *iph, const char *buf, size_t bsize);
+struct dnsf_ckr_ip_header *dnsf_ckr_parse_ip_dgram(const char *buf, const size_t bsize);
 
 unsigned char *dnsf_ckr_mk_ip_dgram(size_t *bsize, const struct dnsf_ckr_ip_header iph);
+
+unsigned char *dnsf_ckr_addr2byte(const char *addr, size_t len);
 
 #endif

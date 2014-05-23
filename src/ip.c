@@ -26,18 +26,20 @@ unsigned short dnsf_ckr_compute_chsum(unsigned char *data, size_t dsize) {
     return (~sum);
 }
 
-void dnsf_ckr_parse_ip_dgram(struct dnsf_ckr_ip_header *iph, const char *buf, size_t bsize) {
+struct dnsf_ckr_ip_header *dnsf_ckr_parse_ip_dgram(const char *buf, const size_t bsize) {
+    struct dnsf_ckr_ip_header *iph = NULL;
     if (iph == NULL || buf == NULL) {
-        return;
+        return NULL;
     }
+    iph = (struct dnsf_ckr_ip_header *) dnsf_ckr_getmem(sizeof(struct dnsf_ckr_ip_header));
     memset(iph, 0, sizeof(struct dnsf_ckr_ip_header));
     if (bsize == 0) {
-        return;
+        return NULL;
     }
     iph->version = (buf[0] & 0xf0) >> 4;
     if (iph->version != 4) {
         iph->version = 0;
-        return;
+        return NULL;
     }
     iph->ihl = buf[0] & 0x0f;
     iph->tos = buf[1];
@@ -65,6 +67,7 @@ void dnsf_ckr_parse_ip_dgram(struct dnsf_ckr_ip_header *iph, const char *buf, si
     } else {
         iph->payload = NULL;
     }
+    return iph;
 }
 
 unsigned char *dnsf_ckr_mk_ip_dgram(size_t *bsize, const struct dnsf_ckr_ip_header iph) {
@@ -117,4 +120,24 @@ unsigned char *dnsf_ckr_mk_ip_dgram(size_t *bsize, const struct dnsf_ckr_ip_head
         memcpy(dp, iph.payload, iph.payload_size);
     }
     return dgram;
+}
+
+unsigned char *dnsf_ckr_addr2byte(const char *addr, size_t len) {
+    unsigned char *retval = (unsigned char *) dnsf_ckr_getmem(len), *r;
+    char oct[20];
+    size_t a, o;
+    for (a = o = 0; addr[a] != 0; a++, o++) {
+        if (addr[a] == '.' || addr[a+1] == 0) {
+            if (addr[a+1] == 0) {
+                oct[o++] = addr[a];
+            }
+            oct[o] = 0;
+            *r = (unsigned char)atoi(oct);
+            r++;
+            o = 0;
+        } else {
+            oct[o] = addr[a];
+        }
+    }
+    return retval;
 }

@@ -1,8 +1,10 @@
 #include "dnscore.h"
 #include "conf.h"
+#include "types.h"
 #include <sys/types.h>
 
 int main(int argc, char **argv) {
+/*
     FILE *fp = fopen("dnsf_ckr.conf", "rb");
     dnsf_ckr_victims_ctx *victims = dnsf_ckr_get_victims_config(fp), *v;
     dnsf_ckr_servers_ctx *servers = NULL, *s;
@@ -27,5 +29,6 @@ int main(int argc, char **argv) {
     del_dnsf_ckr_fakenameserver_ctx(fakenameserver);
     del_dnsf_ckr_victims_ctx(victims);
     del_dnsf_ckr_hostnames_set_ctx(hostnames);
+*/
     return 0;
 }

@@ -7,7 +7,7 @@
 
 #define sf_i(i, s) ( (i) % (s) )
 
-dnsf_ckr_pktctx *unpack_dns_data(const unsigned char *raw_buf, size_t bufsz) {
+dnsf_ckr_pktctx *unpack_dns_data(const unsigned char *raw_buf, const size_t bufsz) {
     dnsf_ckr_pktctx *pkt = NULL;
     size_t c_off;
     if (raw_buf == NULL || bufsz < 11) return NULL;
