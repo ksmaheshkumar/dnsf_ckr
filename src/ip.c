@@ -119,13 +119,16 @@ unsigned char *dnsf_ckr_mk_ip_dgram(size_t *bsize, const struct dnsf_ckr_ip_head
     if (iph.payload_size > 0) {
         memcpy(dp, iph.payload, iph.payload_size);
     }
+    *bsize = dp - dgram + iph.payload_size;
     return dgram;
 }
 
 unsigned char *dnsf_ckr_addr2byte(const char *addr, size_t len) {
-    unsigned char *retval = (unsigned char *) dnsf_ckr_getmem(len), *r;
+    unsigned char *retval = (unsigned char *) dnsf_ckr_getmem(len + 1), *r;
     char oct[20];
     size_t a, o;
+    memset(retval, 0, len);
+    r = retval;
     for (a = o = 0; addr[a] != 0; a++, o++) {
         if (addr[a] == '.' || addr[a+1] == 0) {
             if (addr[a+1] == 0) {
@@ -134,7 +137,7 @@ unsigned char *dnsf_ckr_addr2byte(const char *addr, size_t len) {
             oct[o] = 0;
             *r = (unsigned char)atoi(oct);
             r++;
-            o = 0;
+            o = -1;
         } else {
             oct[o] = addr[a];
         }

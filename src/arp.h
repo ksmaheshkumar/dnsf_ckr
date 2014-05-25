@@ -2,6 +2,7 @@
 #define _DNSF_CKR_ARP_H 1
 
 #include <stdlib.h>
+#include <sys/types.h>
 
 #define ARP_HW_TYPE_ETHERNET    1
 #define ARP_HW_TYPE_IEEE802     6
@@ -42,5 +43,7 @@ struct dnsf_ckr_arp_header *dnsf_ckr_parse_arp_dgram(const char *buf, const size
 unsigned char *dnsf_ckr_mk_arp_dgram(size_t *bsize, const struct dnsf_ckr_arp_header arph);
 
 unsigned char *dnsf_ckr_mac2byte(const char *mac, size_t len);
+
+char *dnsf_ckr_get_mac_by_addr(in_addr_t addr, const char *loiface);
 
 #endif

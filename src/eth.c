@@ -20,16 +20,16 @@ struct dnsf_ckr_ethernet_frame *dnsf_ckr_parse_ethernet_frame(const char *buf, c
     bp += sizeof(eth->dest_hw_addr);
     memcpy(eth->src_hw_addr, bp, sizeof(eth->src_hw_addr));
     bp += sizeof(eth->src_hw_addr);
-    memcpy(&eth->ptype, bp, sizeof(eth->ptype));
-    bp += sizeof(eth->ptype);
+    memcpy(&eth->ether_type, bp, sizeof(eth->ether_type));
+    bp += sizeof(eth->ether_type);
     if (bp < (buf + bsize)) {
-        switch (eth->ptype) {
-            case ETH_PROTO_TYPE_ARP:
+        switch (eth->ether_type) {
+            case ETHER_TYPE_ARP:
                 eth->payload = (unsigned char *)
                         dnsf_ckr_parse_arp_dgram(bp, bsize - 14);
                 eth->payload_size = 0;
                 break;
-            case ETH_PROTO_TYPE_IP:
+            case ETHER_TYPE_IP:
                 eth->payload = (unsigned char *)
                         dnsf_ckr_parse_ip_dgram(bp, bsize - 14);
                 if (eth->payload != NULL) {
@@ -49,13 +49,16 @@ unsigned char *dnsf_ckr_mk_ethernet_frame(size_t *bsize, struct dnsf_ckr_etherne
     }
     retval = (unsigned char *) dnsf_ckr_getmem(14 + eth.payload_size);
     rp = retval;
-    memcpy(rp, eth.dest_hw_addr, sizeof(eth.dest_hw_addr));
+    memcpy(rp, eth.dest_hw_addr, 6);//sizeof(eth.dest_hw_addr));
     rp += sizeof(eth.dest_hw_addr);
-    memcpy(rp, eth.src_hw_addr, sizeof(eth.src_hw_addr));
+    memcpy(rp, eth.src_hw_addr, 6);//sizeof(eth.src_hw_addr));
     rp += sizeof(eth.src_hw_addr);
-    memcpy(rp, &eth.ptype, sizeof(eth.ptype));
-    rp += sizeof(eth.ptype);
+    //memcpy(rp, &eth.ether_type, sizeof(eth.ether_type));
+    *rp = (eth.ether_type & 0xff00) >> 8;
+    *(rp+1) = eth.ether_type & 0xff;
+    rp += sizeof(eth.ether_type);
     memcpy(rp, eth.payload, eth.payload_size);
     //  forget about FCS... :)
+    *bsize = rp - retval + eth.payload_size;
     return retval;
 }

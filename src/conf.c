@@ -144,13 +144,26 @@ dnsf_ckr_victims_ctx *dnsf_ckr_get_victims_config(FILE *conf) {
 
 dnsf_ckr_servers_ctx *dnsf_ckr_get_servers_config(FILE *conf) {
     long cfg_end;
-    char addr[DNSF_CKR_MAX_BUF], c;
+    char addr[DNSF_CKR_MAX_BUF], name[DNSF_CKR_MAX_BUF], c;
     size_t l;
     dnsf_ckr_servers_ctx *servers = NULL;
-    while (dnsf_ckr_find_config_section("server", conf, &cfg_end)) {
+    fseek(conf, 0L, SEEK_SET);
+    while (dnsf_ckr_find_config_section("dns-servers", conf, &cfg_end)) {
+        c = dnsf_ckr_skip_blank(conf);
+        if (c != '=') continue;
         c = dnsf_ckr_skip_blank(conf);
         l = 0;
+        memset(name, 0, sizeof(name));
+        while (ftell(conf) < cfg_end && !dnsf_ckr_is_blank(c) && c != ':' && l < sizeof(name)) {
+            name[l++] = c;
+            c = fgetc(conf);
+        }
+        c = fgetc(conf);
+        if (dnsf_ckr_is_blank(c)) {
+            c = dnsf_ckr_skip_blank(conf);
+        }
         memset(addr, 0, sizeof(addr));
+        l = 0;
         while (ftell(conf) < cfg_end && !dnsf_ckr_is_blank(c) && l < sizeof(addr)) {
             addr[l++] = c;
             c = fgetc(conf);
@@ -160,7 +173,7 @@ dnsf_ckr_servers_ctx *dnsf_ckr_get_servers_config(FILE *conf) {
             del_dnsf_ckr_servers_ctx(servers);
             return NULL;
         }
-        servers = add_server_to_dnsf_ckr_servers_ctx(servers, addr, strlen(addr));
+        servers = add_server_to_dnsf_ckr_servers_ctx(servers, name, strlen(name), addr, strlen(addr));
         fseek(conf, cfg_end, SEEK_SET);
     }
     return servers;
@@ -241,7 +254,7 @@ int dnsf_ckr_get_dnsproto_int_config(FILE *conf, const char *setting_name, const
         if (c == '=') {
             while (ftell(conf) < cfg_end) {
                 dnsf_ckr_get_next_word_from_config(cur_setting, sizeof(cur_setting), conf);
-                printf("%s\n", cur_setting);
+                //printf("%s\n", cur_setting);
                 if (strcmp(setting_name, cur_setting) == 0) {
                     c = dnsf_ckr_skip_blank(conf);
                     dnsf_ckr_get_next_word_from_config(cur_setting, sizeof(cur_setting), conf);
@@ -289,7 +302,7 @@ static int dnsf_ckr_parse_faking_decl(const char *faking_decl, dnsf_ckr_fakename
     }
     m = strstr(faking_decl, "mess up");
     if (f != m) {
-        printf("dnsf_ckr ERROR: expection \"mess up\" on a faking declaration\n");
+        printf("dnsf_ckr ERROR: expecting \"mess up\" on a faking declaration\n");
         del_dnsf_ckr_fakenameserver_ctx(*nameserver);
         return 0;
     }
@@ -341,3 +354,94 @@ dnsf_ckr_fakenameserver_ctx *dnsf_ckr_get_fakenameserver_config(FILE *conf, dnsf
     }
     return nameserver;
 }
+
+static int dnsf_ckr_parse_transactions_decl(const char *decl, dnsf_ckr_realdnstransactions_ctx **transactions, dnsf_ckr_victims_ctx *victims, dnsf_ckr_servers_ctx *servers) {
+    const char *d = decl;
+    char buf[DNSF_CKR_MAX_BUF];
+    int s;
+    dnsf_ckr_victims_ctx *victim;
+    dnsf_ckr_servers_ctx *server;
+    size_t b = 0;
+    if (*decl == ';') return 1;
+    memset(buf, 0, sizeof(buf));
+    while (!dnsf_ckr_is_blank(*d) && *d != 0 && b < sizeof(buf)-1) {
+        buf[b++] = *d;
+        d++;
+    }
+    victim = get_dnsf_ckr_victims_ctx_victim(buf, victims);
+    if (victim == NULL) {
+        printf("dnsf_ckr ERROR: unknown victim : \"%s\"\n", buf);
+        return 0;
+    }
+    for (s = 0; s < 3; s++) {
+        while (*d != 0 && dnsf_ckr_is_blank(*d)) d++;
+        b = 0;
+        memset(buf, 0, sizeof(buf));
+        while (!dnsf_ckr_is_blank(*d) && *d != 0 && b < sizeof(buf)-1) {
+            buf[b++] = *d;
+            d++;
+        }
+        d++;
+        switch (s) {
+            case 0:
+                if (strcmp(buf, "sends") != 0) {
+                    printf("dnsf_ckr ERROR: expecting \"sends requests to\" on a real dns transaction declaration.\n");
+                    return 0;
+                }
+                break;
+            case 1:
+                if (strcmp(buf, "requests") != 0) {
+                    printf("dnsf_ckr ERROR: expecting \"sends requests to\" on a real dns transaction declaration.\n");
+                    return 0;
+                }
+                break;
+            case 2:
+                if (strcmp(buf, "to") != 0) {
+                    printf("dnsf_ckr ERROR: expecting \"sends requests to\" on a real dns transaction declaration.\n");
+                    return 0;
+                }
+                break;
+        }
+    }
+    while (*d != 0 && dnsf_ckr_is_blank(*d)) d++;
+    b = 0;
+    memset(buf, 0, sizeof(buf));
+    while (!dnsf_ckr_is_blank(*d) && *d != 0 && b < sizeof(buf)-1) {
+        buf[b++] = *d;
+        d++;
+    }
+    server = get_dnsf_ckr_servers_ctx_name(buf, servers);
+    if (server == NULL) {
+        printf("dnsf_ckr ERROR: unknown server : \"%s\"\n", buf);
+        return 0;
+    }
+    *transactions = add_transaction_to_dnsf_ckr_realdnstransactions_ctx(*transactions, victim, server);
+    return 1;
+}
+
+dnsf_ckr_realdnstransactions_ctx *dnsf_ckr_get_realdnstransactions_config(FILE *conf, dnsf_ckr_victims_ctx *victims, dnsf_ckr_servers_ctx *servers) {
+    dnsf_ckr_realdnstransactions_ctx *transactions = NULL;
+    long cfg_end;
+    int section_found = 0;
+    char trdecl[DNSF_CKR_MAX_BUF];
+    char c;
+    fseek(conf, 0L, SEEK_SET);
+    while (!section_found && !feof(conf)) {
+        section_found = dnsf_ckr_find_config_section("real-dns-transactions", conf, &cfg_end);
+        if (section_found) {
+            c = dnsf_ckr_skip_blank(conf);
+            if (c == '=') {
+                while (ftell(conf) < cfg_end) {
+                    dnsf_ckr_get_next_line_from_config(trdecl, sizeof(trdecl), conf);
+                    if (dnsf_ckr_is_comment(trdecl[0])) continue;
+                    if (dnsf_ckr_parse_transactions_decl(trdecl, &transactions, victims, servers) == 0) {
+                        del_dnsf_ckr_realdnstransactions_ctx(transactions);
+                        return NULL;
+                    }
+                }
+            }
+        }
+    }
+    return transactions;
+}
+

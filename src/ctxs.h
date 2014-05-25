@@ -8,11 +8,15 @@
                             dnsf_ckr_getmem(sizeof(dnsf_ckr_victims_ctx)),\
                             (v)->name = NULL,\
                             (v)->name_size = 0,\
+                            (v)->hw_addr = NULL,\
                             (v)->next = NULL )
 
 #define new_dnsf_ckr_servers_ctx(s) ( (s) = (dnsf_ckr_servers_ctx *)\
                             dnsf_ckr_getmem(sizeof(dnsf_ckr_servers_ctx)),\
+                            (s)->name = NULL,\
+                            (s)->name_size = 0,\
                             (s)->addr = 0,\
+                            (s)->hw_addr = NULL,\
                             (s)->next = NULL )
 
 #define new_dnsf_ckr_hostnames_ctx(h) ( (h) = (dnsf_ckr_hostnames_ctx *)\
@@ -34,6 +38,12 @@
                             (f)->mess_up = NULL,\
                             (f)->next = NULL )
 
+#define new_dnsf_ckr_realdnstransactions_ctx(r) ((r) = (dnsf_ckr_realdnstransactions_ctx *)\
+                            dnsf_ckr_getmem(sizeof(dnsf_ckr_realdnstransactions_ctx)),\
+                            (r)->victim = NULL,\
+                            (r)->sends_reqs_to = NULL,\
+                            (r)->next = NULL )
+
 // dnsf_ckr_victims_ctx stuff
 
 dnsf_ckr_victims_ctx *add_victim_to_dnsf_ckr_victims_ctx(dnsf_ckr_victims_ctx *victims, const char *name, size_t nsize,
@@ -45,9 +55,11 @@ void del_dnsf_ckr_victims_ctx(dnsf_ckr_victims_ctx *victims);
 // dnsf_ckr_servers_ctx stuff
 
 dnsf_ckr_servers_ctx *add_server_to_dnsf_ckr_servers_ctx(dnsf_ckr_servers_ctx *servers,
+                                                         const char *name, size_t nsize,
                                                          const char *addr, size_t asize);
 dnsf_ckr_servers_ctx *get_dnsf_ckr_servers_ctx_tail(dnsf_ckr_servers_ctx *servers);
 dnsf_ckr_servers_ctx *get_dnsf_ckr_servers_ctx_addr(const char *addr, dnsf_ckr_servers_ctx *servers);
+dnsf_ckr_servers_ctx *get_dnsf_ckr_servers_ctx_name(const char *name, dnsf_ckr_servers_ctx *servers);
 void del_dnsf_ckr_servers_ctx(dnsf_ckr_servers_ctx *servers);
 
 // dnsf_ckr_hostnames_ctx stuff
@@ -74,5 +86,11 @@ dnsf_ckr_fakenameserver_ctx *add_faking_to_dnsf_ckr_fakenameserver_ctx(dnsf_ckr_
 dnsf_ckr_fakenameserver_ctx *get_dnsf_ckr_fakenameserver_ctx_tail(dnsf_ckr_fakenameserver_ctx *nameserver);
 
 void del_dnsf_ckr_fakenameserver_ctx(dnsf_ckr_fakenameserver_ctx *nameserver);
+
+// dnsf_ckr_realdnstransactions_ctx stuff
+
+dnsf_ckr_realdnstransactions_ctx *add_transaction_to_dnsf_ckr_realdnstransactions_ctx(dnsf_ckr_realdnstransactions_ctx *tr, dnsf_ckr_victims_ctx *victim, dnsf_ckr_servers_ctx *send_reqs_to);
+dnsf_ckr_realdnstransactions_ctx *get_dnsf_ckr_realdnstransactions_ctx_tail(dnsf_ckr_realdnstransactions_ctx *tr);
+void del_dnsf_ckr_realdnstransactions_ctx(dnsf_ckr_realdnstransactions_ctx *tr);
 
 #endif

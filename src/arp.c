@@ -1,5 +1,9 @@
 #include "arp.h"
 #include "mem.h"
+#include "eth.h"
+#include "sk.h"
+#include "if.h"
+#include "ip.h"
 #include <string.h>
 #include <ctype.h>
 
@@ -56,6 +60,10 @@ unsigned char *dnsf_ckr_mk_arp_dgram(size_t *bsize, const struct dnsf_ckr_arp_he
     dp++;
     *dp = arph.pt_addr_len;
     dp++;
+    *dp = (arph.opcode & 0xff00) >> 8;
+    dp++;
+    *dp = (arph.opcode & 0x00ff);
+    dp++;
     for (a = 0; a < arph.hw_addr_len; a++, dp++) {
         *dp = arph.src_hw_addr[a];
     }
@@ -68,7 +76,8 @@ unsigned char *dnsf_ckr_mk_arp_dgram(size_t *bsize, const struct dnsf_ckr_arp_he
     for (a = 0; a < arph.pt_addr_len; a++, dp++) {
         *dp = arph.dest_pt_addr[a];
     }
-    return NULL;
+    *bsize = dp - dgram;
+    return dgram;
 }
 
 unsigned char *dnsf_ckr_mac2byte(const char *mac, size_t len) {
@@ -88,3 +97,38 @@ unsigned char *dnsf_ckr_mac2byte(const char *mac, size_t len) {
     return retval;
 }
 
+char *dnsf_ckr_get_mac_by_addr(in_addr_t addr, const char *loiface) {
+    struct dnsf_ckr_ethernet_frame eth;
+    struct dnsf_ckr_arp_header arp;
+    char *mac, *ip;
+    unsigned char *mac_in_bytes;
+    dnsf_ckr_sk sk;
+    sk = dnsf_ckr_create_arp_socket(loiface);
+    if (sk == -1) return NULL;
+    memset(eth.dest_hw_addr, 0xff, sizeof(eth.dest_hw_addr));
+    mac = dnsf_ckr_get_iface_mac(loiface);
+    mac_in_bytes = dnsf_ckr_mac2byte(mac, 6);
+    memcpy(eth.src_hw_addr, mac_in_bytes, 6);
+    free(mac);
+    free(mac_in_bytes);
+    eth.ether_type = ETHER_TYPE_ARP;
+    arp.hwtype = ARP_HW_TYPE_ETHERNET;
+    arp.ptype = ARP_PROTO_TYPE_IP;
+    arp.hw_addr_len = 6;
+    arp.pt_addr_len = 4;
+    arp.opcode = ARP_OPCODE_REQUEST;
+    arp.src_hw_addr = (unsigned char *) dnsf_ckr_getmem(arp.hw_addr_len);
+    memcpy(arp.src_hw_addr, eth.src_hw_addr, 6);
+    ip = dnsf_ckr_get_iface_ip(loiface);
+    arp.src_pt_addr = dnsf_ckr_addr2byte(ip, 4);
+    free(ip);
+    arp.dest_hw_addr = (unsigned char *) dnsf_ckr_getmem(arp.hw_addr_len);
+    memset(arp.dest_hw_addr, 0, arp.hw_addr_len);
+    arp.dest_pt_addr = (unsigned char *)&addr;
+    eth.payload = dnsf_ckr_mk_arp_dgram(&eth.payload_size, arp);
+    free(eth.payload);
+    free(arp.src_hw_addr);
+    free(arp.src_pt_addr);
+    free(arp.dest_hw_addr);
+    return NULL;
+}

@@ -8,13 +8,15 @@ typedef struct _dnsf_ckr_victims_ctx {
     char *name;
     size_t name_size;
     in_addr_t addr;
+    char *hw_addr;
     struct _dnsf_ckr_victims_ctx *next;
 }dnsf_ckr_victims_ctx;
 
-typedef struct _dnsf_ckr_servers_ctx { // deprecated!
-    //char *name;
-    //size_t name_size;
+typedef struct _dnsf_ckr_servers_ctx {
+    char *name;
+    size_t name_size;
     in_addr_t addr;
+    char *hw_addr;
     struct _dnsf_ckr_servers_ctx *next;
 }dnsf_ckr_servers_ctx;
 
@@ -38,11 +40,19 @@ typedef struct _dnsf_ckr_fakenameserver_ctx {
     struct _dnsf_ckr_fakenameserver_ctx *next;
 }dnsf_ckr_fakenameserver_ctx;
 
+typedef struct _dnsf_ckr_realdnstransactions_ctx {
+    dnsf_ckr_victims_ctx *victim;
+    dnsf_ckr_servers_ctx *sends_reqs_to;
+    struct _dnsf_ckr_realdnstransactions_ctx *next;
+}dnsf_ckr_realdnstransactions_ctx;
+
 typedef struct _dnsf_ckr_dnsproto {
     int ttl_in_secs;
     dnsf_ckr_victims_ctx *victims;
     dnsf_ckr_servers_ctx *servers;
     dnsf_ckr_hostnames_ctx *hostnames;
 }dnsf_ckr_dnsproto;
+
+typedef int dnsf_ckr_sk;
 
 #endif

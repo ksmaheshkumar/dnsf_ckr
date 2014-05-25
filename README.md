@@ -158,5 +158,5 @@ Agora, se todos esses dados apresentandos estiverem dentro do arquivo "my-dirty-
         ./dnsf_ckr my-dirty-little-hacking.conf
 
 
-Boa diversao!
+Divirta-se!
 Rafael :)

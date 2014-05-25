@@ -43,13 +43,14 @@ void del_dnsf_ckr_victims_ctx(dnsf_ckr_victims_ctx *victims) {
     for (p = t = victims; t; p = t) {
         t = p->next;
         if (p->name != NULL) free(p->name);
+        if (p->hw_addr != NULL) free(p->hw_addr);
         free(p);
     }
 }
 
 // dnsf_ckr_servers_ctx stuff
 
-dnsf_ckr_servers_ctx *add_server_to_dnsf_ckr_servers_ctx(dnsf_ckr_servers_ctx *servers, const char *addr, size_t asize) {
+dnsf_ckr_servers_ctx *add_server_to_dnsf_ckr_servers_ctx(dnsf_ckr_servers_ctx *servers, const char *name, const size_t nsize, const char *addr, size_t asize) {
     dnsf_ckr_servers_ctx *head = servers, *p;
     if (head == NULL) {
         new_dnsf_ckr_servers_ctx(head);
@@ -59,10 +60,10 @@ dnsf_ckr_servers_ctx *add_server_to_dnsf_ckr_servers_ctx(dnsf_ckr_servers_ctx *s
         new_dnsf_ckr_servers_ctx(p->next);
         p = p->next;
     }
-//    p->name_size = nsize;
-//    p->name = (char *) dnsf_ckr_getmem(nsize);
-//    memset(p->name, 0, nsize);
-//    strncpy(p->name, name, nsize-1);
+    p->name_size = nsize;
+    p->name = (char *) dnsf_ckr_getmem(nsize + 1);
+    memset(p->name, 0, nsize + 1);
+    strncpy(p->name, name, nsize);
     p->addr = dnsf_ckr_ip2num(addr, asize);
     return head;
 }
@@ -82,11 +83,20 @@ dnsf_ckr_servers_ctx *get_dnsf_ckr_servers_ctx_addr(const char *addr, dnsf_ckr_s
     return NULL;
 }
 
+dnsf_ckr_servers_ctx *get_dnsf_ckr_servers_ctx_name(const char *name, dnsf_ckr_servers_ctx *servers) {
+    dnsf_ckr_servers_ctx *p;
+    for (p = servers; p; p = p->next) {
+        if (strcmp(p->name, name) == 0) return p;
+    }
+    return 0;
+}
+
 void del_dnsf_ckr_servers_ctx(dnsf_ckr_servers_ctx *servers) {
     dnsf_ckr_servers_ctx *t, *p;
     for (t = p = servers; t; p = t) {
         t = p->next;
-//        if (p->name != NULL) free(p->name);
+        if (p->name != NULL) free(p->name);
+        if (p->hw_addr != NULL) free(p->hw_addr);
         free(p);
     }
 }
@@ -203,6 +213,35 @@ dnsf_ckr_fakenameserver_ctx *get_dnsf_ckr_fakenameserver_ctx_tail(dnsf_ckr_faken
 void del_dnsf_ckr_fakenameserver_ctx(dnsf_ckr_fakenameserver_ctx *nameserver) {
     dnsf_ckr_fakenameserver_ctx *p, *t;
     for (t = p = nameserver; t; p = t) {
+        t = p->next;
+        free(p);
+    }
+}
+
+dnsf_ckr_realdnstransactions_ctx *add_transaction_to_dnsf_ckr_realdnstransactions_ctx(dnsf_ckr_realdnstransactions_ctx *tr, dnsf_ckr_victims_ctx *victim, dnsf_ckr_servers_ctx *send_reqs_to) {
+    dnsf_ckr_realdnstransactions_ctx *head = tr, *p;
+    if (head == NULL) {
+        new_dnsf_ckr_realdnstransactions_ctx(head);
+        p = head;
+    } else {
+        p = get_dnsf_ckr_realdnstransactions_ctx_tail(tr);
+        new_dnsf_ckr_realdnstransactions_ctx(p->next);
+        p = p->next;
+    }
+    p->victim = victim;
+    p->sends_reqs_to = send_reqs_to;
+    return head;
+}
+
+dnsf_ckr_realdnstransactions_ctx *get_dnsf_ckr_realdnstransactions_ctx_tail(dnsf_ckr_realdnstransactions_ctx *tr) {
+    dnsf_ckr_realdnstransactions_ctx *p;
+    for (p = tr; p->next; p = p->next);
+    return p;
+}
+
+void del_dnsf_ckr_realdnstransactions_ctx(dnsf_ckr_realdnstransactions_ctx *tr) {
+    dnsf_ckr_realdnstransactions_ctx *p, *t;
+    for (p = t = tr; t; p = t) {
         t = p->next;
         free(p);
     }
