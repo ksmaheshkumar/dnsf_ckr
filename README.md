@@ -55,7 +55,7 @@ we have the following attack configuration:
             sheep sends requests to cheap-server
         ;
 
-Okay, now you want to add a new attack based on a new victim and also direct the "sheep" for others wilder domains:
+Okay, now you want to add a new attack based on a new victim and also direct the "sheep" to other wilder domains:
 
         victims =
             sheep: 192.30.70.9
@@ -105,25 +105,25 @@ Santiago
 Dnsf_ckr
 --------
 
-dnsf_ckr e uma aplicacao usada para baguncar com nomes de dominios. Ate agora isso funciona no FreeBSD.
+dnsf_ckr é uma aplicação usada para bagunçar com nomes de domínios. Até agora isso funciona no FreeBSD.
 
-A ideia aqui e sniffar as requisicoes dns da vitima e falsificar a resposta o quanto antes que o servidor dns real.
-Dessa forma e possivel redirecionar a maquina alvo para onde nos quisermos.
+A ideia aqui é sniffar as requisições dns da vítima e falsificar a resposta o quanto antes que o servidor dns real.
+Dessa forma é possível redirecionar a máquina alvo para onde nós quisermos.
 
 MuHAuHaUHauHAuHAHuha! :P
 
 ## Usando o dnsf_ckr
 
-Inicialmente voce precisa saber tres coisas
+Inicialmente você precisa saber três coisas
 
-    * O endereco ip da vitima
-    * O endereco ip do servidor DNS real da vitima
-    * Quais nomes de dominio voce quer spoofar
+    * O endereço ip da vítima
+    * O endereço ip do servidor DNS real da vítima
+    * Quais nomes de domínio você quer spoofar
 
-Essas informacoes devem ser informadas ao dnsf_ckr atraves do arquivo de configuracao.
+Essas informações devem ser informadas ao dnsf_ckr através do arquivo de configuração.
 
-Supondo que sua vitima e chamada "sheep" e tem o endereco ip "192.30.70.9" e acessa o "www.facebook.com", nos temos
-a seguinte configuracao de ataque:
+Supondo que sua vítima é chamada "sheep" e tem o endereço ip "192.30.70.9" e acessa o "www.facebook.com", nós temos
+a seguinte configuração de ataque:
 
         # dnsf_ckr attack config sample
 
@@ -157,7 +157,7 @@ a seguinte configuracao de ataque:
             sheep sends requests to cheap-server
         ;
 
-Certo, agora voce quer adicionar um novo ataque baseado em uma nova vitima e direcionar "sheep" para outros dominios mais selvagens:
+Certo, agora você quer adicionar um novo ataque baseado em uma nova vítima e direcionar "sheep" para outros domínios mais selvagens:
 
         victims =
             sheep: 192.30.70.9
@@ -194,11 +194,11 @@ Certo, agora voce quer adicionar um novo ataque baseado em uma nova vitima e dir
             with obama mess up search-engines
         ;
 
-Agora, se os dados de configuracao apresentados estao dentro do arquivo "my-dirty-little-hacking.conf"... tudo o que precisamos fazer e:
+Agora, se os dados de configuração apresentados estão dentro do arquivo "my-dirty-little-hacking.conf"... tudo o que precisamos fazer é:
 
         ./dnsf_ckr --attack-map=my-dirty-little-hacking.conf --iface=em1
 
-A opcao --iface indica o nome da interface que voce usa para acessar a rede.
+A opção --iface indica o nome da interface que você usa para acessar a rede.
 
 Divirta-se!
 Santiago
