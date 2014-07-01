@@ -1,0 +1,51 @@
+include ~/toolsets/gcc/gcc-app.hsl
+
+var sources type list;
+var includes type list;
+var cflags type list;
+var libraries type list;
+var ldflags type list;
+var output_filepath type string;
+
+project dnsf_ckr_unit_tests : toolset "gcc-c-app" : $sources, $includes, $cflags, $libraries, $ldflags, $output_filepath;
+
+dnsf_ckr_unit_tests.prologue() {
+    $sources.ls(".*\\.c$");
+    if (hefesto.sys.os_name() == "linux" ||
+        hefesto.sys.os_name() == "freebsd") {
+        $output_filepath = "unit-test";
+    }
+    var old_cwd type string;
+    $old_cwd = hefesto.sys.pwd();
+    hefesto.sys.cd("..");
+    $ldflags.ls(".*\\.o$");
+    var i type int;
+    var item type string;
+    $i = 0;
+    while ($i < $ldflags.count()) {
+        $item = $ldflags.item($i);
+        if ($item.match("main\\.o$") == 1) {
+            $ldflags.del_item($item);
+            break;
+        }
+        $i = $i + 1;
+    }
+    hefesto.sys.cd($old_cwd);
+}
+
+dnsf_ckr_unit_tests.epilogue() {
+    hefesto.sys.echo("____\n");
+    if (hefesto.sys.last_forge_result() == 0) {
+        var exit_code type int;
+        hefesto.sys.cd("bin");
+        $exit_code = hefesto.sys.run("./" + $output_filepath);
+        hefesto.sys.cd("..");
+        hefesto.sys.echo("____\n");
+        if ($exit_code == 0) {
+            hefesto.sys.echo("success!\n");
+        } else {
+            hefesto.sys.echo("failure...\n");
+            hefesto.project.abort($exit_code);
+        }
+    }
+}

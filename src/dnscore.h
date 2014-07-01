@@ -50,7 +50,11 @@ typedef struct _dnsf_ckr_pktctx {
     unsigned short id;
     unsigned char qr;
     unsigned char opcode;
-    unsigned char aatcrdra;
+    //unsigned char aatcrdra;
+    unsigned char aa;
+    unsigned char tc;
+    unsigned char rd;
+    unsigned char ra;
     unsigned char z;
     unsigned char rcode;
     unsigned short qdcount;
@@ -62,6 +66,9 @@ typedef struct _dnsf_ckr_pktctx {
 }dnsf_ckr_pktctx;
 
 dnsf_ckr_pktctx *unpack_dns_data(const unsigned char *rawbuf, const size_t bufsz);
+
 size_t pack_dns_data(unsigned char **output, dnsf_ckr_pktctx dnspkt);
+
+unsigned char *dnsf_ckr_mk_dnsresponse(size_t *bufsz, const unsigned char *query, const size_t query_size, unsigned long dnsserver_addr);
 
 #endif

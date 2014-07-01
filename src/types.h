@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
+#define DNSF_CKR_VERSION        "0.0.1.0"
+
 typedef struct _dnsf_ckr_victims_ctx {
     char *name;
     size_t name_size;

@@ -12,7 +12,8 @@ unsigned short dnsf_ckr_compute_chsum(unsigned char *data, size_t dsize) {
     unsigned long sum = 0;
     unsigned char lo, hi;
     size_t d;
-    for (d = 0; d < dsize; d += 2) {
+    size_t padded_size = dsize + (dsize & 1);
+    for (d = 0; d < padded_size; d += 2) {
         hi = data[d];
         lo = 0;
         if ((d + 1) < dsize) {
@@ -21,24 +22,22 @@ unsigned short dnsf_ckr_compute_chsum(unsigned char *data, size_t dsize) {
         sum += ((hi << 8) | lo);
     }
     while (sum >> 16) {
-        sum = (sum >> 16) | ((sum << 16) >> 16);
+        sum = (sum >> 16) + ((sum << 16) >> 16);
     }
-    return (~sum);
+    return ~sum;
 }
 
-struct dnsf_ckr_ip_header *dnsf_ckr_parse_ip_dgram(const char *buf, const size_t bsize) {
+struct dnsf_ckr_ip_header *dnsf_ckr_parse_ip_dgram(const unsigned char *buf, const size_t bsize) {
     struct dnsf_ckr_ip_header *iph = NULL;
-    if (iph == NULL || buf == NULL) {
+    if (buf == NULL || bsize == 0) {
         return NULL;
     }
     iph = (struct dnsf_ckr_ip_header *) dnsf_ckr_getmem(sizeof(struct dnsf_ckr_ip_header));
     memset(iph, 0, sizeof(struct dnsf_ckr_ip_header));
-    if (bsize == 0) {
-        return NULL;
-    }
     iph->version = (buf[0] & 0xf0) >> 4;
     if (iph->version != 4) {
         iph->version = 0;
+        free(iph);
         return NULL;
     }
     iph->ihl = buf[0] & 0x0f;
@@ -90,11 +89,14 @@ unsigned char *dnsf_ckr_mk_ip_dgram(size_t *bsize, const struct dnsf_ckr_ip_head
     *dp = (iph.id & 0xff00) >> 8;
     inc_dp;
     *dp = (iph.id & 0x00ff);
+    inc_dp;
     *dp = (iph.flags << 5) | (iph.fragoff & 0x1f00);
     inc_dp;
     *dp = (iph.fragoff & 0x00ff);
     inc_dp;
     *dp = iph.ttl;
+    inc_dp;
+    *dp = iph.proto;
     inc_dp;
     *dp = (iph.chsum & 0xff00) >> 8;
     inc_dp;

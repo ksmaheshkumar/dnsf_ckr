@@ -26,6 +26,13 @@
 
 #define ARP_PROTO_TYPE_IP       0x0800
 
+#define dnsf_ckr_arp_header_free(a) {\
+    if ((a)->src_hw_addr != NULL) free((a)->src_hw_addr);\
+    if ((a)->src_pt_addr != NULL) free((a)->src_pt_addr);\
+    if ((a)->src_hw_addr != NULL) free((a)->dest_hw_addr);\
+    if ((a)->src_pt_addr != NULL) free((a)->dest_pt_addr);\
+}
+
 struct dnsf_ckr_arp_header {
     unsigned short hwtype;
     unsigned short ptype;
@@ -38,12 +45,12 @@ struct dnsf_ckr_arp_header {
     unsigned char *dest_pt_addr;
 };
 
-struct dnsf_ckr_arp_header *dnsf_ckr_parse_arp_dgram(const char *buf, const size_t bsize);
+struct dnsf_ckr_arp_header *dnsf_ckr_parse_arp_dgram(const unsigned char *buf, const size_t bsize);
 
 unsigned char *dnsf_ckr_mk_arp_dgram(size_t *bsize, const struct dnsf_ckr_arp_header arph);
 
 unsigned char *dnsf_ckr_mac2byte(const char *mac, size_t len);
 
-char *dnsf_ckr_get_mac_by_addr(in_addr_t addr, const char *loiface);
+char *dnsf_ckr_get_mac_by_addr(in_addr_t addr, const char *loiface, const int max_tries);
 
 #endif

@@ -17,11 +17,16 @@ dnsf_ckr.prologue() {
     hefesto.sys.echo("[building dnsf_ckr...]\n");
     $sources.ls(".*\\.c$");
     $cflags.add_item("-Wall");
+    $ldflags.add_item("-lpthread");
+    $ldflags.add_item("-lexecinfo");
 }
 
 dnsf_ckr.epilogue() {
     if (hefesto.sys.last_forge_result() == 0) {
         hefesto.sys.echo("[dnsf_ckr was built]\n");
+        hefesto.sys.cd("unit_test");
+        hefesto.sys.forge("dnsf_ckr_unit_tests", "Forgefile.hsl", "--bin-output-dir=bin");
+        hefesto.sys.cd("..");
     } else {
         hefesto.sys.echo("[dnsf_ckr seems fucked]\n");
     }

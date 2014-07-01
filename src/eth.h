@@ -14,7 +14,7 @@ struct dnsf_ckr_ethernet_frame {
     size_t payload_size;
 };
 
-struct dnsf_ckr_ethernet_frame *dnsf_ckr_parse_ethernet_frame(const char *buf, const size_t bsize);
+struct dnsf_ckr_ethernet_frame *dnsf_ckr_parse_ethernet_frame(const unsigned char *buf, const size_t bsize);
 
 unsigned char *dnsf_ckr_mk_ethernet_frame(size_t *bsize, struct dnsf_ckr_ethernet_frame eth);
 

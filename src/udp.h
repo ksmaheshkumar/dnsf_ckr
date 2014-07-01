@@ -12,8 +12,10 @@ struct dnsf_ckr_udp_header {
     size_t payload_size;
 };
 
-struct dnsf_ckr_udp_header *dnsf_ckr_parse_udp_dgram(const char *buf, const size_t bsize);
+struct dnsf_ckr_udp_header *dnsf_ckr_parse_udp_dgram(const unsigned char *buf, const size_t bsize);
 
 unsigned char *dnsf_ckr_mk_udp_dgram(size_t *dsize, const struct dnsf_ckr_udp_header udph);
+
+unsigned short dnsf_ckr_compute_udp_chsum(const unsigned char *buf, const size_t bsize, unsigned long src_addr, unsigned long dest_addr, const unsigned short pseudo_hdr_len);
 
 #endif

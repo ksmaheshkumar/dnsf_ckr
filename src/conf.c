@@ -1,6 +1,7 @@
 #include "conf.h"
 #include "ctxs.h"
 #include "iputils.h"
+#include "arp.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -254,7 +255,6 @@ int dnsf_ckr_get_dnsproto_int_config(FILE *conf, const char *setting_name, const
         if (c == '=') {
             while (ftell(conf) < cfg_end) {
                 dnsf_ckr_get_next_word_from_config(cur_setting, sizeof(cur_setting), conf);
-                //printf("%s\n", cur_setting);
                 if (strcmp(setting_name, cur_setting) == 0) {
                     c = dnsf_ckr_skip_blank(conf);
                     dnsf_ckr_get_next_word_from_config(cur_setting, sizeof(cur_setting), conf);
@@ -445,3 +445,28 @@ dnsf_ckr_realdnstransactions_ctx *dnsf_ckr_get_realdnstransactions_config(FILE *
     return transactions;
 }
 
+int dnsf_ckr_get_mac_of_victims_and_servers(dnsf_ckr_victims_ctx **victims, dnsf_ckr_servers_ctx **servers, const char *loiface) {
+    int got = 1;
+    dnsf_ckr_victims_ctx *vp;
+    dnsf_ckr_servers_ctx *sp;
+    printf("dnsf_ckr INFO: now getting all victims MACs... wait...\n");
+    for (vp = *victims; vp && got; vp = vp->next) {
+        vp->hw_addr = dnsf_ckr_get_mac_by_addr(vp->addr, loiface, 5);
+        got = (vp->hw_addr != NULL);
+    }
+    if (!got) {
+        printf("dnsf_ckr ERROR: error while was trying to get some MAC's :S ... Why shouldn't you check your conectivity and try again?\n");
+    } else {
+        printf("dnsf_ckr INFO: now getting DNS servers MACs... wait...\n"); 
+        for (sp = *servers; sp && got; sp = sp->next) {
+            sp->hw_addr = dnsf_ckr_get_mac_by_addr(sp->addr, loiface, 5);
+            got = (sp->hw_addr != NULL);
+        }
+        if (!got) {
+            printf("dnsf_ckr ERROR: error while was trying to get some MAC's :S ... Why shouldn't you check your conectivity and try again?\n");
+        } else {
+            printf("dnsf_ckr INFO: done.\n");
+        }
+    }
+    return got;
+}
