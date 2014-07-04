@@ -3,7 +3,7 @@ Dnsf_ckr
 
 (sorry my bad english...)
 
-dnsf_ckr is a application used for messing up with domain names. Until now it works on FreeBSD.
+dnsf_ckr is an application used for messing up with domain names. Until now it works on FreeBSD.
 
 The idea here is sniffing victim's dns requests and fake the response as soon as possible than real dns server.
 In this way is possible redirect the target machine to anywhere we want.

