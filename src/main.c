@@ -1,12 +1,12 @@
 #include "dnscore.h"
 #include "conf.h"
 #include "types.h"
-#include "sk.h"
+//#include "sk.h"
 #include "arpspf.h"
 #include "if.h"
 #include "netbots.h"
 #include "ctxs.h"
-#include "bpf_io.h"
+#include "sockio.h"
 #include "watchdogs.h"
 #include <stdio.h>
 #include <string.h>
@@ -174,9 +174,9 @@ int main(int argc, char **argv) {
     } else {
         fclose(fp);
         fp = NULL;
-        dnsf_ckr_init_bpfio(iface);
+        dnsf_ckr_init_sockio(iface);
         start_nbots(victims, servers, hostnames, transactions, fakenameserver, iface);
-        dnsf_ckr_fini_bpfio();
+        dnsf_ckr_fini_sockio();
     }
     del_dnsf_ckr_victims_ctx(victims);
     del_dnsf_ckr_servers_ctx(servers);

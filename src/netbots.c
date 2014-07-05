@@ -2,12 +2,12 @@
 #include "types.h"
 #include "arpspf.h"
 #include "if.h"
-#include "sk.h"
+#include "layer1sk.h"
 #include "arpspf.h"
 #include "dnsspf.h"
 #include "dnscore.h"
 #include "mem.h"
-#include "bpf_io.h"
+#include "sockio.h"
 #include "watchdogs.h"
 #include <unistd.h>
 #include <sys/types.h>
@@ -45,7 +45,7 @@ void *dnsf_ckr_fakeserver_bot_routine(void *vargs) {
     struct dnsf_ckr_bot_routine_ctx *args = (struct dnsf_ckr_bot_routine_ctx *)vargs;
     dnsf_ckr_realdnstransactions_ctx *transactions = (dnsf_ckr_realdnstransactions_ctx *)args->arg[0];
     dnsf_ckr_fakenameserver_ctx *fakeserver = (dnsf_ckr_fakenameserver_ctx *)args->arg[1];
-    dnsf_ckr_bpfio_data_ctx *packets = NULL, *p;
+    dnsf_ckr_sockio_data_ctx *packets = NULL, *p;
     unsigned char *rawpkt = NULL;
     unsigned char src_mac[6];
     size_t rawpktsz;
@@ -93,7 +93,7 @@ void *dnsf_ckr_fakeserver_bot_routine(void *vargs) {
                 }
             }
             if (packets != NULL) {
-                del_dnsf_ckr_bpfio_data_ctx(packets);
+                del_dnsf_ckr_sockio_data_ctx(packets);
                 packets = NULL;
             }
         }

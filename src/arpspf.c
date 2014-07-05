@@ -2,7 +2,7 @@
 #include "arp.h"
 #include "ip.h"
 #include "eth.h"
-#include "bpf_io.h"
+#include "sockio.h"
 #include <string.h>
 #include <unistd.h>
 
@@ -28,7 +28,7 @@ int dnsf_ckr_spoof_mac(const char *src_mac, const char *spf_src_ip,
     memcpy(eth.dest_hw_addr, arp_packet.dest_hw_addr, 6);
     memcpy(eth.src_hw_addr, arp_packet.src_hw_addr, 6);
     rawpkt = dnsf_ckr_mk_ethernet_frame(&rawpktsz, eth);
-    res = dnsf_ckr_bpf_write(rawpkt, rawpktsz);
+    res = dnsf_ckr_sock_write(rawpkt, rawpktsz);
     //usleep(secs_out);
     free(arp_packet.src_hw_addr);
     free(arp_packet.src_pt_addr);

@@ -6,6 +6,12 @@
 
 #define DNSF_CKR_VERSION        "0.0.1.0"
 
+#define DNSF_CKR_PLATFORM_FREEBSD       0
+#define DNSF_CKR_PLATFORM_LINUX         1
+#define DNSF_CKR_PLATFORM_WINDOWS       2
+
+#define DNSF_CKR_TGT_OS         DNSF_CKR_PLATFORM_FREEBSD
+
 typedef struct _dnsf_ckr_victims_ctx {
     char *name;
     size_t name_size;
@@ -55,6 +61,16 @@ typedef struct _dnsf_ckr_dnsproto {
     dnsf_ckr_hostnames_ctx *hostnames;
 }dnsf_ckr_dnsproto;
 
+#if DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_FREEBSD || DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_LINUX
+
 typedef int dnsf_ckr_sk;
+
+#elif DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_WINDOWS
+
+#include <windows.h>
+
+typedef HANDLE dnsf_ckr_sk;
+
+#endif
 
 #endif
