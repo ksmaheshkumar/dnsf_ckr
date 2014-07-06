@@ -29,7 +29,9 @@ dnsf_ckr.prologue() {
     }
     $cflags.add_item("-Wall");
     $ldflags.add_item("-lpthread");
-    $ldflags.add_item("-lexecinfo");
+    if ($platform_folder == "freebsd") {
+        $ldflags.add_item("-lexecinfo");
+    }
 }
 
 dnsf_ckr.epilogue() {

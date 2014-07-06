@@ -2,15 +2,24 @@
 #define _DNSF_CKR_TYPES_H 1
 
 #include <stdlib.h>
-#include <sys/types.h>
 
 #define DNSF_CKR_VERSION        "0.0.1.0"
 
-#define DNSF_CKR_PLATFORM_FREEBSD       0
-#define DNSF_CKR_PLATFORM_LINUX         1
-#define DNSF_CKR_PLATFORM_WINDOWS       2
+#define DNSF_CKR_PLATFORM_FREEBSD       1
+#define DNSF_CKR_PLATFORM_LINUX         2
+#define DNSF_CKR_PLATFORM_WINDOWS       3
 
-#define DNSF_CKR_TGT_OS         DNSF_CKR_PLATFORM_FREEBSD
+#define DNSF_CKR_TGT_OS         DNSF_CKR_PLATFORM_LINUX
+
+#if DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_LINUX
+
+#include <netinet/in.h>
+
+#elif DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_FREEBSD
+
+#include <sys/types.h>
+
+#endif
 
 typedef struct _dnsf_ckr_victims_ctx {
     char *name;

@@ -10,7 +10,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <net/if.h>
-#include <net/bpf.h>
+//#include <net/bpf.h>
 #include <string.h>
 #include <ctype.h>
 

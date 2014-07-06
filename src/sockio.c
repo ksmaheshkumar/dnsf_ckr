@@ -11,6 +11,8 @@ static dnsf_ckr_sockio_data_ctx *get_dnsf_ckr_sockio_data_ctx_tail(dnsf_ckr_sock
 int dnsf_ckr_init_sockio(const char *iface) {
 #if DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_FREEBSD
     return dnsf_ckr_init_bpfio(iface);
+#elif DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_LINUX
+    return dnsf_ckr_init_skio(iface);
 #endif
     return -1;
 }
@@ -18,12 +20,16 @@ int dnsf_ckr_init_sockio(const char *iface) {
 void dnsf_ckr_fini_sockio() {
 #if DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_FREEBSD
     dnsf_ckr_fini_bpfio();
+#elif DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_LINUX
+    dnsf_ckr_fini_skio();
 #endif
 }
 
 dnsf_ckr_sockio_data_ctx *dnsf_ckr_sock_read() {
 #if DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_FREEBSD
     return dnsf_ckr_bpf_read();
+#elif DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_LINUX
+    return dnsf_ckr_sk_read();
 #endif
     return NULL;
 }
@@ -31,6 +37,8 @@ dnsf_ckr_sockio_data_ctx *dnsf_ckr_sock_read() {
 int dnsf_ckr_sock_write(unsigned char *buffer, const size_t bsize) {
 #if DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_FREEBSD
     return dnsf_ckr_bpf_write(buffer, bsize);
+#elif DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_LINUX
+    return dnsf_ckr_sk_write(buffer, bsize);
 #endif
     return -1;
 }

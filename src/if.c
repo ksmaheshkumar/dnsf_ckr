@@ -9,14 +9,27 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
+
+#include "types.h"
+
+#if DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_FREEBSD
+
 #include <net/if_dl.h>
+
+#elif DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_LINUX
+
+#include <ifaddrs.h>
+
+#endif
+
 #include <netinet/in.h>
 #include <ifaddrs.h>
 
 char *dnsf_ckr_get_iface_mac(const char *iface) {
+    char *retval = NULL;
+#if DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_FREEBSD
     struct ifaddrs *ifap = NULL, *ip;
     unsigned char *mac;
-    char *retval = NULL;
     int result = getifaddrs(&ifap);
     if (result == 0) {
         for (ip = ifap; ip != NULL; ip = ip->ifa_next) {
@@ -30,6 +43,9 @@ char *dnsf_ckr_get_iface_mac(const char *iface) {
         }
         freeifaddrs(ifap);
     }
+#elif DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_LINUX
+    printf("TODO: dnsf_ckr_get_iface_mac precisa ser implementada!!\n");
+#endif
     return retval;
 }
 

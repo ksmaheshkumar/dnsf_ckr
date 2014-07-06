@@ -56,6 +56,10 @@ unsigned char *dnsf_ckr_mac2byte(const char *mac, size_t len);
 
 #include "freebsd/native_arp.h"
 
+#elif DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_LINUX
+
+#include "linux/native_arp.h"
+
 #endif
 
 #endif

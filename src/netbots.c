@@ -17,7 +17,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <string.h>
-#include <net/bpf.h>
+//#include <net/bpf.h>
 
 void *dnsf_ckr_arp_spoofing_bot_routine(void *vargs) {
     struct dnsf_ckr_bot_routine_ctx *args = (struct dnsf_ckr_bot_routine_ctx *)vargs;
@@ -51,7 +51,7 @@ void *dnsf_ckr_fakeserver_bot_routine(void *vargs) {
     size_t rawpktsz;
     dnsf_ckr_action_t action;
     while (!dnsf_ckr_should_abort()) {
-        packets = dnsf_ckr_bpf_read();
+        packets = dnsf_ckr_sock_read();
         if (packets != NULL) {
             for (p = packets; p; p = p->next) {
                 if (p->dsize < 14) continue;
@@ -85,7 +85,7 @@ void *dnsf_ckr_fakeserver_bot_routine(void *vargs) {
                         break;
                 }
                 if (rawpkt != NULL) {
-                    dnsf_ckr_bpf_write(rawpkt, rawpktsz); //  ..MuHauHauAHuahAUhUahUAhAUHAUHh! :)
+                    dnsf_ckr_sock_write(rawpkt, rawpktsz); //  ..MuHauHauAHuahAUhUahUAhAUHAUHh! :)
                     if (rawpkt != p->data) {
                         free(rawpkt);
                     }
