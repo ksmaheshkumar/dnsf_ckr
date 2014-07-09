@@ -10,6 +10,19 @@ In this way is possible redirect the target machine to anywhere we want.
 
 MuHAuHaUHauHAuHAHuha! :P
 
+## How to build it?
+
+In order to build dnsf_ckr you need to use Hefesto[http://github.com/rafael-santiago/hefesto.git].
+
+After follow the steps to install Hefesto in your system, all you need to do (on shell) inside dnsf_ckr src
+subdirectory is invoke hefesto. Something this:
+
+    root@zephyr:~/src/dnsf_ckr/src# hefesto
+
+"That's all folks!!"
+
+;)
+
 ## Using dnsf_ckr
 
 At first you need to know three things
@@ -111,6 +124,19 @@ A ideia aqui é sniffar as requisições dns da vítima e falsificar a resposta o qu
 Dessa forma é possível redirecionar a máquina alvo para onde nós quisermos.
 
 MuHAuHaUHauHAuHAHuha! :P
+
+## Como compilar isso?
+
+Para compilar o dnsf_ckr você precisa usar o Hefesto[http://github.com/rafael-santiago/hefesto.git].
+
+Depois de seguir os passos para instalar o Hefesto em seu sistema, tudo o que você precisa fazer (no shell)
+dentro do subdiretório src do dnsf_ckr é invocar o hefesto. Algo nessa linha:
+
+    root@zephyr:~/src/dnsf_ckr/src# hefesto
+
+"E por hoje é só pessoal!!"
+
+;)
 
 ## Usando o dnsf_ckr
 
