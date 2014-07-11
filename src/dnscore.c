@@ -1,3 +1,10 @@
+/*
+ *                              Copyright (C) 2014 by Rafael Santiago
+ *
+ * This is free software. You can redistribute it and/or modify under
+ * the terms of the GNU General Public License version 2.
+ *
+ */
 #include "dnscore.h"
 #include "mem.h"
 #include "types.h"
@@ -157,7 +164,7 @@ unsigned char *dnsf_ckr_mk_dnsresponse(size_t *bufsz, const unsigned char *query
     *bufsz = 0;
     conn = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     memset(&tv, 0, sizeof(tv));
-    tv.tv_sec = 20;
+    tv.tv_sec = 5;
     setsockopt(conn, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
     conn_in.sin_family = AF_INET;
     conn_in.sin_port = htons(53);

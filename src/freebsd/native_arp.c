@@ -1,3 +1,10 @@
+/*
+ *                              Copyright (C) 2014 by Rafael Santiago
+ *
+ * This is free software. You can redistribute it and/or modify under
+ * the terms of the GNU General Public License version 2.
+ *
+ */
 #include "native_arp.h"
 #include "sk.h"
 #include "../mem.h"

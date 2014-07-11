@@ -1,3 +1,10 @@
+/*
+ *                              Copyright (C) 2014 by Rafael Santiago
+ *
+ * This is free software. You can redistribute it and/or modify under
+ * the terms of the GNU General Public License version 2.
+ *
+ */
 #ifndef _DNSF_CKR_DNSSPF_H
 #define _DNSF_CKR_DNSSPF_H 1
 
@@ -10,7 +17,7 @@ typedef enum _dnsf_ckr_action {
     dnsf_ckr_action_spoof
 }dnsf_ckr_action_t;
 
-dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t pktsz, unsigned char **outpkt, size_t *outpktsz, dnsf_ckr_realdnstransactions_ctx *transactions, dnsf_ckr_fakenameserver_ctx *fakenameserver, const unsigned char src_mac[6]);
+dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t pktsz, unsigned char **outpkt, size_t *outpktsz, dnsf_ckr_realdnstransactions_ctx *transactions, dnsf_ckr_fakenameserver_ctx *fakenameserver, const unsigned char src_mac[6], char *domain_name, size_t domain_name_sz, dnsf_ckr_victims_ctx **victim, dnsf_ckr_hostnames_ctx **hostinfo);
 
 dnsf_ckr_action_t dnsf_ckr_proc_eth_frame(const unsigned char *frame, const size_t framesz, unsigned char **outpkt, size_t *outpktsz, dnsf_ckr_realdnstransactions_ctx *transactions);
 
