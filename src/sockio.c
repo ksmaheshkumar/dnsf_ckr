@@ -6,7 +6,6 @@
  *
  */
 #include "sockio.h"
-#include "layer1sk.h"
 #include "mem.h"
 #include <string.h>
 

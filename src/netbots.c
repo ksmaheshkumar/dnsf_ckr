@@ -9,7 +9,6 @@
 #include "types.h"
 #include "arpspf.h"
 #include "if.h"
-#include "layer1sk.h"
 #include "arpspf.h"
 #include "dnsspf.h"
 #include "dnscore.h"

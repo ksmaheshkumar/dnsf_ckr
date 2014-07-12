@@ -15,7 +15,7 @@ MuHAuHaUHauHAuHAHuha! :P
 In order to build dnsf_ckr you need to use Hefesto[http://github.com/rafael-santiago/hefesto.git].
 
 After follow the steps to install Hefesto in your system, all you need to do (on shell) inside dnsf_ckr src
-subdirectory is invoke hefesto. Something this:
+subdirectory is invoke hefesto. Something like this:
 
     root@zephyr:~/src/dnsf_ckr/src# hefesto
 
