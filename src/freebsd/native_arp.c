@@ -12,7 +12,6 @@
 #include "../arp.h"
 #include "../eth.h"
 #include "../ip.h"
-#include "../layer1sk.h"
 #include <unistd.h>
 #include <net/bpf.h>
 #include <arpa/inet.h>
