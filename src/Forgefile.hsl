@@ -13,8 +13,28 @@ project dnsf_ckr : toolset "gcc-c-app" : $sources,
                                          $ldflags,
                                          "dnsf_ckr";
 
+function mkclean() : result type none {
+    var objs type list;
+    $objs.ls(".*\\.o$");
+    var o type int;
+    $o = 0;
+    var obj_fpath type string;
+    while ($o < $objs.count()) {
+        $obj_fpath = $objs.item($o);
+        hefesto.sys.rm($obj_fpath);
+        $o = $o + 1;
+    }
+    hefesto.sys.echo("[clean]\n");
+    hefesto.project.abort(1);
+}
+
 dnsf_ckr.prologue() {
     hefesto.sys.echo("[building dnsf_ckr...]\n");
+    var clean type list;
+    $clean = hefesto.sys.get_option("clean");
+    if ($clean.count() > 0) {
+        mkclean();
+    }
     $sources.ls(".*\\.c$");
     var platform_folder type string;
     $platform_folder = hefesto.sys.os_name();

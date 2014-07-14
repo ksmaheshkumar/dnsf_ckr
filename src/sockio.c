@@ -11,6 +11,8 @@
 
 static dnsf_ckr_sockio_data_ctx *get_dnsf_ckr_sockio_data_ctx_tail(dnsf_ckr_sockio_data_ctx *data);
 
+static dnsf_ckr_sockio_data_ctx *get_dnsf_ckr_sockio_data_ctx_tail(dnsf_ckr_sockio_data_ctx *data);
+
 #define new_dnsf_ckr_sockio_data_ctx(d) ( (d) = (dnsf_ckr_sockio_data_ctx *) dnsf_ckr_getmem(sizeof(dnsf_ckr_sockio_data_ctx)),\
                                      (d)->next = NULL, (d)->data = NULL, (d)->dsize = 0 )
 

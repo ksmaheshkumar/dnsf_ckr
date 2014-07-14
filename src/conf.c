@@ -25,6 +25,18 @@
 
 static char dnsf_ckr_skip_blank(FILE *conf);
 
+static void dnsf_ckr_get_next_word_from_config(char *buf, size_t bufsize, FILE *conf);
+
+static char dnsf_ckr_skip_blank(FILE *conf);
+
+static long dnsf_ckr_get_config_section_end(FILE *conf);
+
+static dnsf_ckr_hostnames_ctx *dnsf_ckr_parse_addrname_decl(dnsf_ckr_hostnames_ctx *hostnames, const char *addrname);
+
+static int dnsf_ckr_parse_faking_decl(const char *faking_decl, dnsf_ckr_fakenameserver_ctx **nameserver, dnsf_ckr_victims_ctx *victims, dnsf_ckr_hostnames_set_ctx *hset);
+
+static int dnsf_ckr_parse_transactions_decl(const char *decl, dnsf_ckr_realdnstransactions_ctx **transactions, dnsf_ckr_victims_ctx *victims, dnsf_ckr_servers_ctx *servers);
+
 static void dnsf_ckr_get_next_word_from_config(char *buf, size_t bufsize, FILE *conf) {
     size_t b;
     char c;
@@ -250,13 +262,13 @@ dnsf_ckr_hostnames_set_ctx *dnsf_ckr_get_hostnames_config(FILE *conf) {
     return hset;
 }
 
-int dnsf_ckr_get_dnsproto_int_config(FILE *conf, const char *setting_name, const int default_value) {
+int dnsf_ckr_get_core_int_config(FILE *conf, const char *setting_name, const int default_value) {
     long cfg_end;
     int found;
     char c;
     char cur_setting[DNSF_CKR_MAX_BUF];
     fseek(conf, 0L, SEEK_SET);
-    found = dnsf_ckr_find_config_section("dnsproto", conf, &cfg_end);
+    found = dnsf_ckr_find_config_section("dnsf_ckr-core", conf, &cfg_end);
     if (found) {
         c = dnsf_ckr_skip_blank(conf);
         if (c == '=') {
