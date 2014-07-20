@@ -3,16 +3,16 @@ Dnsf_ckr
 
 (sorry my bad english...)
 
-dnsf_ckr is an application used for messing up with domain names. Until now it works on FreeBSD.
+dnsf_ckr is an application used for messing up with domain names. Until now it works on FreeBSD and Linux.
 
 The idea here is sniffing victim's dns requests and fake the response as soon as possible than real dns server.
-In this way is possible redirect the target machine to anywhere we want.
+In this way we can redirect the target machine to anywhere we want.
 
 MuHAuHaUHauHAuHAHuha! :P
 
 ## How to build it?
 
-In order to build dnsf_ckr you need to use Hefesto[http://github.com/rafael-santiago/hefesto.git].
+In order to build dnsf_ckr you need to use (Hefesto)[http://github.com/rafael-santiago/hefesto.git].
 
 After follow the steps to install Hefesto in your system, all you need to do (on shell) inside dnsf_ckr src
 subdirectory is invoke hefesto. Something like this:
@@ -111,7 +111,20 @@ Now, if the presented configuration data is into "my-dirty-little-hacking.conf" 
 
 The option --iface indicates the name of the interface that you use to access the network.
 
+### What about the dnsf_ckr-core section in .conf file?
+
+Inside this section we can adjust some things related with dnsf_ckr internal system stuff.
+
+These are the current entries that you can use to setup the application according your whishes.
+
+|   *Entry*     |  *Type*  |                               *Used for*                                                 |
+|:-------------:|:--------:|:----------------------------------------------------------------------------------------:|
+|  dnsspf-ttl   |    int   | Indicates the time in seconds that the dns resolution will be cached on victim's machine |
+| arpspf-pkt-nr |    int   | Indicates the number of arp packets sent to the victim on each arp spoof attempt.        |
+
+
 Have fun!
+
 Santiago
 
 
@@ -127,7 +140,7 @@ MuHAuHaUHauHAuHAHuha! :P
 
 ## Como compilar isso?
 
-Para compilar o dnsf_ckr você precisa usar o Hefesto[http://github.com/rafael-santiago/hefesto.git].
+Para compilar o dnsf_ckr você precisa usar o (Hefesto)[http://github.com/rafael-santiago/hefesto.git].
 
 Depois de seguir os passos para instalar o Hefesto em seu sistema, tudo o que você precisa fazer (no shell)
 dentro do subdiretório src do dnsf_ckr é invocar o hefesto. Algo nessa linha:
@@ -226,5 +239,18 @@ Agora, se os dados de configuração apresentados estão dentro do arquivo "my-dirt
 
 A opção --iface indica o nome da interface que você usa para acessar a rede.
 
+### Qual é da seção dnsf_ckr-core dentro do arquivo .conf?
+
+Dentro dessa seção nós podemos ajustar algumas coisas relacionadas com o sistema interno do dnsf_ckr.
+
+Estas são as entradas que atualmente você pode usar para colocar a aplicação de acordo com o que você precisa.
+
+|   *Entrada*   |  *Tipo*  |                               *Usada para*                                               |
+|:-------------:|:--------:|:----------------------------------------------------------------------------------------:|
+|  dnsspf-ttl   |    int   | Indicar o tempo em segundos que a resolução dns será cacheada na máquina da vítima.      |
+| arpspf-pkt-nr |    int   | Indicar o número de pacotes arp enviados para a vítima à cada tentativa de arp spoof.    |
+
+
 Divirta-se!
+
 Santiago
