@@ -115,7 +115,7 @@ The option --iface indicates the name of the interface that you use to access th
 
 Inside this section we can adjust some things related with dnsf_ckr internal system stuff.
 
-These are the current entries that you can use to setup the application according your whishes.
+These are the current entries that you can use to setup the application according your wishes.
 
 |   *Entry*     |  *Type*  |                               *Used for*                                                 |
 |:-------------:|:--------:|:----------------------------------------------------------------------------------------:|
