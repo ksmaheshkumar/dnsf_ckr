@@ -59,7 +59,7 @@ char *dnsf_ckr_get_mac_by_addr(in_addr_t addr, const char *loiface, const int ma
     arp.hw_addr_len = 6;
     arp.pt_addr_len = 4;
     arp.opcode = ARP_OPCODE_REQUEST;
-    arp.src_hw_addr = (unsigned char *) dnsf_ckr_getmem(arp.hw_addr_len);
+    arp.src_hw_addr = (unsigned char *) dnsf_ckr_getmemory(arp.hw_addr_len);
     memcpy(arp.src_hw_addr, eth.src_hw_addr, 6);
 
     ip = dnsf_ckr_get_iface_ip(loiface);
@@ -71,7 +71,7 @@ char *dnsf_ckr_get_mac_by_addr(in_addr_t addr, const char *loiface, const int ma
 
     arp.src_pt_addr = dnsf_ckr_addr2byte(ip, 4);
     free(ip);
-    arp.dest_hw_addr = (unsigned char *) dnsf_ckr_getmem(arp.hw_addr_len);
+    arp.dest_hw_addr = (unsigned char *) dnsf_ckr_getmemory(arp.hw_addr_len);
     memset(arp.dest_hw_addr, 0, arp.hw_addr_len);
     arp.dest_pt_addr = (unsigned char *)&addr;
     eth.payload = dnsf_ckr_mk_arp_dgram(&eth.payload_size, arp);
@@ -85,13 +85,13 @@ char *dnsf_ckr_get_mac_by_addr(in_addr_t addr, const char *loiface, const int ma
                 if (ether_type == ETHER_TYPE_ARP) {
                     arp_reply = dnsf_ckr_parse_arp_dgram((unsigned char *)&buf[14], bytes_total - 14);
                     if (arp_reply != NULL && arp_reply->opcode == ARP_OPCODE_REPLY) {
-                        ip = (char *) dnsf_ckr_getmem(20);
+                        ip = (char *) dnsf_ckr_getmemory(20);
                         sprintf(ip, "%d.%d.%d.%d", arp_reply->src_pt_addr[0],
                                                    arp_reply->src_pt_addr[1],
                                                    arp_reply->src_pt_addr[2],
                                                    arp_reply->src_pt_addr[3]);
                         if (strcmp(inet_ntoa(sin_addr), ip) == 0) {
-                            mac = (char *) dnsf_ckr_getmem(20);
+                            mac = (char *) dnsf_ckr_getmemory(20);
                             sprintf(mac, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", arp_reply->src_hw_addr[0],
                                                                           arp_reply->src_hw_addr[1],
                                                                           arp_reply->src_hw_addr[2],

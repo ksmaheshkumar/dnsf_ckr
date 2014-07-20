@@ -24,7 +24,7 @@ dnsf_ckr_victims_ctx *add_victim_to_dnsf_ckr_victims_ctx(dnsf_ckr_victims_ctx *v
         p = p->next;
     }
     p->name_size = nsize;
-    p->name = (char *) dnsf_ckr_getmem(nsize + 1);
+    p->name = (char *) dnsf_ckr_getmemory(nsize + 1);
     memset(p->name, 0, nsize + 1);
     strncpy(p->name, name, nsize);
     p->addr = dnsf_ckr_ip2num(addr, asize);
@@ -68,7 +68,7 @@ dnsf_ckr_servers_ctx *add_server_to_dnsf_ckr_servers_ctx(dnsf_ckr_servers_ctx *s
         p = p->next;
     }
     p->name_size = nsize;
-    p->name = (char *) dnsf_ckr_getmem(nsize + 1);
+    p->name = (char *) dnsf_ckr_getmemory(nsize + 1);
     memset(p->name, 0, nsize + 1);
     strncpy(p->name, name, nsize);
     p->addr = dnsf_ckr_ip2num(addr, asize);
@@ -122,7 +122,7 @@ dnsf_ckr_hostnames_ctx *add_host_to_dnsf_ckr_hostnames_ctx(dnsf_ckr_hostnames_ct
         p = p->next;
     }
     p->name_size = nsize;
-    p->name = (char *) dnsf_ckr_getmem(nsize + 1);
+    p->name = (char *) dnsf_ckr_getmemory(nsize + 1);
     memset(p->name, 0, nsize + 1);
     strncpy(p->name, name, nsize);
     p->addr = dnsf_ckr_ip2num(addr, asize);
@@ -162,7 +162,7 @@ dnsf_ckr_hostnames_set_ctx *add_set_to_dnsf_ckr_hostnames_set_ctx(dnsf_ckr_hostn
         new_dnsf_ckr_hostnames_set_ctx(head);
         p = head;
     }
-    p->name = (char *) dnsf_ckr_getmem(nsize + 1);
+    p->name = (char *) dnsf_ckr_getmemory(nsize + 1);
     memset(p->name, 0, nsize + 1);
     strncpy(p->name, name, nsize);
     return head;

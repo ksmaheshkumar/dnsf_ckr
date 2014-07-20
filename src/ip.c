@@ -39,7 +39,7 @@ struct dnsf_ckr_ip_header *dnsf_ckr_parse_ip_dgram(const unsigned char *buf, con
     if (buf == NULL || bsize == 0) {
         return NULL;
     }
-    iph = (struct dnsf_ckr_ip_header *) dnsf_ckr_getmem(sizeof(struct dnsf_ckr_ip_header));
+    iph = (struct dnsf_ckr_ip_header *) dnsf_ckr_getmemory(sizeof(struct dnsf_ckr_ip_header));
     memset(iph, 0, sizeof(struct dnsf_ckr_ip_header));
     iph->version = (buf[0] & 0xf0) >> 4;
     if (iph->version != 4) {
@@ -68,7 +68,7 @@ struct dnsf_ckr_ip_header *dnsf_ckr_parse_ip_dgram(const unsigned char *buf, con
     iph->opt_size = 0;
     iph->payload_size = iph->len - 20;
     if (iph->payload_size > 0) {
-        iph->payload = (unsigned char *) dnsf_ckr_getmem(iph->payload_size);
+        iph->payload = (unsigned char *) dnsf_ckr_getmemory(iph->payload_size);
         memcpy(iph->payload, &buf[20], iph->payload_size % bsize);
     } else {
         iph->payload = NULL;
@@ -81,7 +81,7 @@ unsigned char *dnsf_ckr_mk_ip_dgram(size_t *bsize, const struct dnsf_ckr_ip_head
     if (bsize == NULL) {
         return NULL;
     }
-    dgram = (unsigned char *) dnsf_ckr_getmem(iph.len);
+    dgram = (unsigned char *) dnsf_ckr_getmemory(iph.len);
     *bsize = iph.len;
     dend = dgram + iph.len;
     dp = dgram;
@@ -89,11 +89,11 @@ unsigned char *dnsf_ckr_mk_ip_dgram(size_t *bsize, const struct dnsf_ckr_ip_head
     inc_dp;
     *dp = iph.tos;
     inc_dp;
-    *dp = (iph.len & 0xff00) >> 8;
+    *dp = (iph.len >> 8);
     inc_dp;
     *dp = (iph.len & 0x00ff);
     inc_dp;
-    *dp = (iph.id & 0xff00) >> 8;
+    *dp = (iph.id >> 8);
     inc_dp;
     *dp = (iph.id & 0x00ff);
     inc_dp;
@@ -105,11 +105,11 @@ unsigned char *dnsf_ckr_mk_ip_dgram(size_t *bsize, const struct dnsf_ckr_ip_head
     inc_dp;
     *dp = iph.proto;
     inc_dp;
-    *dp = (iph.chsum & 0xff00) >> 8;
+    *dp = (iph.chsum >> 8);
     inc_dp;
     *dp = (iph.chsum & 0x00ff);
     inc_dp;
-    *dp = (iph.src & 0xff000000) >> 24;
+    *dp = (iph.src >> 24);
     inc_dp;
     *dp = (iph.src & 0x00ff0000) >> 16;
     inc_dp;
@@ -117,7 +117,7 @@ unsigned char *dnsf_ckr_mk_ip_dgram(size_t *bsize, const struct dnsf_ckr_ip_head
     inc_dp;
     *dp = (iph.src & 0x000000ff);
     inc_dp;
-    *dp = (iph.dest & 0xff000000) >> 24;
+    *dp = (iph.dest >> 24);
     inc_dp;
     *dp = (iph.dest & 0x00ff0000) >> 16;
     inc_dp;
@@ -133,7 +133,7 @@ unsigned char *dnsf_ckr_mk_ip_dgram(size_t *bsize, const struct dnsf_ckr_ip_head
 }
 
 unsigned char *dnsf_ckr_addr2byte(const char *addr, size_t len) {
-    unsigned char *retval = (unsigned char *) dnsf_ckr_getmem(len + 1), *r;
+    unsigned char *retval = (unsigned char *) dnsf_ckr_getmemory(len + 1), *r;
     char oct[20];
     size_t a, o;
     memset(retval, 0, len);

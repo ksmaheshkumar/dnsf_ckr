@@ -66,7 +66,7 @@ dnsf_ckr_sockio_data_ctx *dnsf_ckr_bpf_read() {
         return NULL;
     }
     pthread_mutex_lock(&bpf_dev_mtx);
-    bpf_buf = (struct bpf_hdr *) dnsf_ckr_getmem(bpf_fd_bsize);
+    bpf_buf = (struct bpf_hdr *) dnsf_ckr_getmemory(bpf_fd_bsize);
     memset(bpf_buf, 0, bpf_fd_bsize);
     bytes_total = read(bpf_fd, bpf_buf, bpf_fd_bsize);
     if (bytes_total > 0) {

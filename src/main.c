@@ -5,10 +5,8 @@
  * the terms of the GNU General Public License version 2.
  *
  */
-#include "dnscore.h"
 #include "conf.h"
 #include "types.h"
-//#include "sk.h"
 #include "arpspf.h"
 #include "if.h"
 #include "netbots.h"

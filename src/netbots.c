@@ -11,7 +11,6 @@
 #include "if.h"
 #include "arpspf.h"
 #include "dnsspf.h"
-#include "dnscore.h"
 #include "mem.h"
 #include "sockio.h"
 #include "watchdogs.h"

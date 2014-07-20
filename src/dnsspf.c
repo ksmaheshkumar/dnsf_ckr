@@ -11,7 +11,7 @@
 #include "arp.h"
 #include "eth.h"
 #include "mem.h"
-#include "dnscore.h"
+#include "dns.h"
 #include <string.h>
 #include <stdio.h>
 #include <arpa/inet.h>
@@ -45,7 +45,7 @@ static char *dnsf_ckr_qname2cstr(const unsigned char *qname) {
     if (qname == NULL) {
         return NULL;
     }
-    cstr = (char *) dnsf_ckr_getmem(0xff);
+    cstr = (char *) dnsf_ckr_getmemory(0xff);
     memset(cstr, 0, 0xff);
     q = qname;
     c = cstr;
@@ -86,7 +86,7 @@ static dnsf_ckr_hostnames_ctx *dnsf_ckr_must_spoof_dns_response(const unsigned l
     return NULL;
 }
 
-static void dnsf_ckr_spoof_dns_response(dnsf_ckr_pktctx **dns, dnsf_ckr_hostnames_ctx *hostname, const int dnsspf_ttl) {
+static void dnsf_ckr_spoof_dns_response(struct dnsf_ckr_dns_header **dns, dnsf_ckr_hostnames_ctx *hostname, const int dnsspf_ttl) {
     if (hostname == NULL || dns == NULL) {
         return;
     }
@@ -102,7 +102,7 @@ static void dnsf_ckr_spoof_dns_response(dnsf_ckr_pktctx **dns, dnsf_ckr_hostname
     (*dns)->rscrecfmt.type = DNSF_CKR_TYPE_A;
     (*dns)->rscrecfmt.clss = DNSF_CKR_CLASS_IN;
     (*dns)->rscrecfmt.ttl = dnsspf_ttl;
-    (*dns)->rscrecfmt.rdata = (unsigned char *) dnsf_ckr_getmem(sizeof(hostname->addr));
+    (*dns)->rscrecfmt.rdata = (unsigned char *) dnsf_ckr_getmemory(sizeof(hostname->addr));
     (*dns)->rscrecfmt.rdlen = 4;
     memcpy((*dns)->rscrecfmt.rdata, &hostname->addr, sizeof(hostname->addr));
 }
@@ -111,7 +111,7 @@ dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t
     struct dnsf_ckr_ip_header *ip = NULL;
     struct dnsf_ckr_udp_header *udp = NULL;
     struct dnsf_ckr_ethernet_frame eth;
-    dnsf_ckr_pktctx *dns = NULL;
+    struct dnsf_ckr_dns_header *dns = NULL;
     dnsf_ckr_hostnames_ctx *hp = NULL;
     dnsf_ckr_victims_ctx *vp;
     char *hostname = NULL;
@@ -323,7 +323,7 @@ dnsf_ckr_action_t dnsf_ckr_proc_eth_frame(const unsigned char *frame, const size
                 }
             }
             if (must_process) {
-                *outpkt = (unsigned char *) dnsf_ckr_getmem(framesz);
+                *outpkt = (unsigned char *) dnsf_ckr_getmemory(framesz);
                 *outpktsz = framesz;
                 out_p = *outpkt;
                 memcpy(out_p, frame, framesz);

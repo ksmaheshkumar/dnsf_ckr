@@ -13,7 +13,7 @@ static dnsf_ckr_sockio_data_ctx *get_dnsf_ckr_sockio_data_ctx_tail(dnsf_ckr_sock
 
 static dnsf_ckr_sockio_data_ctx *get_dnsf_ckr_sockio_data_ctx_tail(dnsf_ckr_sockio_data_ctx *data);
 
-#define new_dnsf_ckr_sockio_data_ctx(d) ( (d) = (dnsf_ckr_sockio_data_ctx *) dnsf_ckr_getmem(sizeof(dnsf_ckr_sockio_data_ctx)),\
+#define new_dnsf_ckr_sockio_data_ctx(d) ( (d) = (dnsf_ckr_sockio_data_ctx *) dnsf_ckr_getmemory(sizeof(dnsf_ckr_sockio_data_ctx)),\
                                      (d)->next = NULL, (d)->data = NULL, (d)->dsize = 0 )
 
 int dnsf_ckr_init_sockio(const char *iface) {
@@ -70,7 +70,7 @@ dnsf_ckr_sockio_data_ctx *add_data_to_dnsf_ckr_sockio_data_ctx(dnsf_ckr_sockio_d
         new_dnsf_ckr_sockio_data_ctx(p->next);
         p = p->next;
     }
-    p->data = (unsigned char *) dnsf_ckr_getmem(dsize + 1);
+    p->data = (unsigned char *) dnsf_ckr_getmemory(dsize + 1);
     memset(p->data, 0, dsize + 1);
     if (dsize > 0) {
         memcpy(p->data, data, dsize);

@@ -12,14 +12,14 @@
 
 
 #define new_dnsf_ckr_victims_ctx(v) ( (v) = (dnsf_ckr_victims_ctx *)\
-                            dnsf_ckr_getmem(sizeof(dnsf_ckr_victims_ctx)),\
+                            dnsf_ckr_getmemory(sizeof(dnsf_ckr_victims_ctx)),\
                             (v)->name = NULL,\
                             (v)->name_size = 0,\
                             (v)->hw_addr = NULL,\
                             (v)->next = NULL )
 
 #define new_dnsf_ckr_servers_ctx(s) ( (s) = (dnsf_ckr_servers_ctx *)\
-                            dnsf_ckr_getmem(sizeof(dnsf_ckr_servers_ctx)),\
+                            dnsf_ckr_getmemory(sizeof(dnsf_ckr_servers_ctx)),\
                             (s)->name = NULL,\
                             (s)->name_size = 0,\
                             (s)->addr = 0,\
@@ -27,26 +27,26 @@
                             (s)->next = NULL )
 
 #define new_dnsf_ckr_hostnames_ctx(h) ( (h) = (dnsf_ckr_hostnames_ctx *)\
-                            dnsf_ckr_getmem(sizeof(dnsf_ckr_hostnames_ctx)),\
+                            dnsf_ckr_getmemory(sizeof(dnsf_ckr_hostnames_ctx)),\
                             (h)->name = NULL,\
                             (h)->name_size = 0,\
                             (h)->next = NULL )
 
 #define new_dnsf_ckr_hostnames_set_ctx(h) ( (h) = (dnsf_ckr_hostnames_set_ctx *)\
-                            dnsf_ckr_getmem(sizeof(dnsf_ckr_hostnames_set_ctx)),\
+                            dnsf_ckr_getmemory(sizeof(dnsf_ckr_hostnames_set_ctx)),\
                             (h)->name = NULL,\
                             (h)->name_size = 0,\
                             (h)->hostnames = NULL,\
                             (h)->next = NULL )
 
 #define new_dnsf_ckr_fakenameserver_ctx(f) ( (f) = (dnsf_ckr_fakenameserver_ctx *)\
-                            dnsf_ckr_getmem(sizeof(dnsf_ckr_fakenameserver_ctx)),\
+                            dnsf_ckr_getmemory(sizeof(dnsf_ckr_fakenameserver_ctx)),\
                             (f)->with = NULL,\
                             (f)->mess_up = NULL,\
                             (f)->next = NULL )
 
 #define new_dnsf_ckr_realdnstransactions_ctx(r) ((r) = (dnsf_ckr_realdnstransactions_ctx *)\
-                            dnsf_ckr_getmem(sizeof(dnsf_ckr_realdnstransactions_ctx)),\
+                            dnsf_ckr_getmemory(sizeof(dnsf_ckr_realdnstransactions_ctx)),\
                             (r)->victim = NULL,\
                             (r)->sends_reqs_to = NULL,\
                             (r)->next = NULL )

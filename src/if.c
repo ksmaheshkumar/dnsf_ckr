@@ -45,7 +45,7 @@ char *dnsf_ckr_get_iface_mac(const char *iface) {
         for (ip = ifap; ip != NULL; ip = ip->ifa_next) {
             if (strcmp(ip->ifa_name, iface) != 0) continue;
             if (ip->ifa_data != NULL && ip->ifa_addr->sa_family == AF_LINK) {
-                retval = (char *) dnsf_ckr_getmem(20);
+                retval = (char *) dnsf_ckr_getmemory(20);
                 mac = (unsigned char *)LLADDR((struct sockaddr_dl *)ip->ifa_addr);
                 sprintf(retval, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", *mac, *(mac+1), *(mac+2),
                                                                 *(mac+3), *(mac+4), *(mac+5));
@@ -73,7 +73,7 @@ char *dnsf_ckr_get_iface_mac(const char *iface) {
                 if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) == 0) {
                     if (!(ifr.ifr_flags & IFF_LOOPBACK)) {
                         if (ioctl(sockfd, SIOCGIFHWADDR, &ifr) == 0) {
-                            retval = (char *) dnsf_ckr_getmem(20);
+                            retval = (char *) dnsf_ckr_getmemory(20);
                             mac = (unsigned char *)ifr.ifr_hwaddr.sa_data;
                             sprintf(retval, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", *mac, *(mac+1), *(mac+2),
                                                                          *(mac+3), *(mac+4), *(mac+5));
@@ -101,7 +101,7 @@ char *dnsf_ckr_get_iface_ip(const char *iface) {
         close(sfd);
         return NULL;
     }
-    ip = (char *) dnsf_ckr_getmem(20);
+    ip = (char *) dnsf_ckr_getmemory(20);
     addr = &req.ifr_addr;
     if (inet_ntop(AF_INET, &(((struct sockaddr_in *)addr)->sin_addr), ip, 20) == NULL) {
         close(sfd);

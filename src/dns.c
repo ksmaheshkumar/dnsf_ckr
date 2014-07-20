@@ -5,7 +5,7 @@
  * the terms of the GNU General Public License version 2.
  *
  */
-#include "dnscore.h"
+#include "dns.h"
 #include "mem.h"
 #include "types.h"
 #include <sys/socket.h>
@@ -13,20 +13,20 @@
 #include <string.h>
 #include <unistd.h>
 
-#define new_dnsf_ckr_pktctx(p) { p = (dnsf_ckr_pktctx *) dnsf_ckr_getmem(sizeof(dnsf_ckr_pktctx));\
-                                 if (p == NULL) exit(1);\
-                                p->rscrecfmt.rdata = NULL; }
+#define new_dnsf_ckr_dns_header(p) { p = (struct dnsf_ckr_dns_header *) dnsf_ckr_getmemory(sizeof(struct dnsf_ckr_dns_header));\
+                                    if (p == NULL) exit(1);\
+                                    p->rscrecfmt.rdata = NULL; }
 
 #define sf_i(i, s) ( (i) % (s) )
 
 #define getbit(w, b) ( ((unsigned long) w << b) >> 31 )
 
-dnsf_ckr_pktctx *unpack_dns_data(const unsigned char *raw_buf, const size_t bufsz) {
+struct dnsf_ckr_dns_header *unpack_dns_data(const unsigned char *raw_buf, const size_t bufsz) {
     size_t b;
-    dnsf_ckr_pktctx *pkt = NULL;
+    struct dnsf_ckr_dns_header *pkt = NULL;
     size_t c_off;
     if (raw_buf == NULL || bufsz < 11) return NULL;
-    new_dnsf_ckr_pktctx(pkt);
+    new_dnsf_ckr_dns_header(pkt);
     pkt->id = (((unsigned short)raw_buf[0]) << 8) | raw_buf[1];
     pkt->qr = (raw_buf[2] >> 7);
     pkt->opcode = ((raw_buf[2] & 0x78) >> 3);
@@ -56,7 +56,7 @@ dnsf_ckr_pktctx *unpack_dns_data(const unsigned char *raw_buf, const size_t bufs
     return pkt;
 }
 
-size_t pack_dns_data(unsigned char **output, dnsf_ckr_pktctx pkt) {
+size_t pack_dns_data(unsigned char **output, struct dnsf_ckr_dns_header pkt) {
     unsigned char *pdata = *output;
     unsigned char *p, *d;
     *output = (unsigned char *) malloc(11 + pkt.qdcount +
@@ -78,19 +78,19 @@ size_t pack_dns_data(unsigned char **output, dnsf_ckr_pktctx pkt) {
          ((unsigned char)pkt.z << 4) |
          ((unsigned char)pkt.rcode);
     p++;
-    *p = ((pkt.qdcount & 0xff00) >> 8);
+    *p = (pkt.qdcount >> 8);
     p++;
     *p = (pkt.qdcount & 0x00ff);
     p++;
-    *p = ((pkt.ancount & 0xff00) >> 8);
+    *p = (pkt.ancount >> 8);
     p++;
     *p = (pkt.ancount & 0x00ff);
     p++;
-    *p = ((pkt.nscount & 0xff00) >> 8);
+    *p = (pkt.nscount >> 8);
     p++;
     *p = (pkt.nscount & 0x00ff);
     p++;
-    *p = ((pkt.arcount & 0xff00) >> 8);
+    *p = (pkt.arcount >> 8);
     p++;
     *p = (pkt.arcount & 0x00ff);
     p++;
@@ -104,11 +104,11 @@ size_t pack_dns_data(unsigned char **output, dnsf_ckr_pktctx pkt) {
         }
         *p = 0;
         p++;
-        *p = ((pkt.questionsec.qtype & 0xff00) >> 8);
+        *p = (pkt.questionsec.qtype >> 8);
         p++;
         *p = (pkt.questionsec.qtype & 0x00ff);
         p++;
-        *p = ((pkt.questionsec.qclass & 0xff00) >> 8);
+        *p = (pkt.questionsec.qclass >> 8);
         p++;
         *p = (pkt.questionsec.qclass & 0x00ff);
         p++;
@@ -122,15 +122,15 @@ size_t pack_dns_data(unsigned char **output, dnsf_ckr_pktctx pkt) {
         //*p = 0x0c;
         *p = 0;
         p++;
-        *p = ((pkt.rscrecfmt.type & 0xff00) >> 8);
+        *p = (pkt.rscrecfmt.type >> 8);
         p++;
         *p = (pkt.rscrecfmt.type & 0x00ff);
         p++;
-        *p = ((pkt.rscrecfmt.clss & 0xff00) >> 8);
+        *p = (pkt.rscrecfmt.clss >> 8);
         p++;
         *p = (pkt.rscrecfmt.clss & 0x00ff);
         p++;
-        *p = ((pkt.rscrecfmt.ttl & 0xff000000) >> 24);
+        *p = (pkt.rscrecfmt.ttl >> 24);
         p++;
         *p = ((pkt.rscrecfmt.ttl & 0x00ff0000) >> 16);
         p++;
@@ -138,7 +138,7 @@ size_t pack_dns_data(unsigned char **output, dnsf_ckr_pktctx pkt) {
         p++;
         *p = (pkt.rscrecfmt.ttl & 0x000000ff);
         p++;
-        *p = ((pkt.rscrecfmt.rdlen & 0xff00) >> 8);
+        *p = (pkt.rscrecfmt.rdlen >> 8);
         p++;
         *p = (pkt.rscrecfmt.rdlen & 0x00ff);
         p++;
@@ -173,7 +173,7 @@ unsigned char *dnsf_ckr_mk_dnsresponse(size_t *bufsz, const unsigned char *query
     if ((size_t)bufsize == query_size) {
         bufsize = recv(conn, buf, sizeof(buf), 0);
         if (bufsize > 0) {
-            retval = (unsigned char *) dnsf_ckr_getmem(bufsize);
+            retval = (unsigned char *) dnsf_ckr_getmemory(bufsize);
             memcpy(retval, buf, bufsize);
             *bufsz = bufsize;
         }

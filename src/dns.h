@@ -5,8 +5,8 @@
  * the terms of the GNU General Public License version 2.
  *
  */
-#ifndef _DNSF_CKR_DNSCORE_H
-#define _DNSF_CKR_DNSCORE_H
+#ifndef _DNSF_CKR_DNS_H
+#define _DNSF_CKR_DNS_H
 
 #include <stdlib.h>
 
@@ -38,13 +38,13 @@
 
 #define DNSF_CKR_QCLASS_ANY     255
 
-struct dnsf_ckr_pktqsecctx {
+struct dnsf_ckr_dnspktqsecctx {
     unsigned char qname[0xff];
     unsigned short qtype;
     unsigned short qclass;
 };
 
-struct dnsf_ckr_pktrscrecfmtctx {
+struct dnsf_ckr_dnspktrscrecfmtctx {
     unsigned char name[0xff];
     unsigned short type;
     unsigned short clss;
@@ -53,7 +53,7 @@ struct dnsf_ckr_pktrscrecfmtctx {
     unsigned char *rdata;
 };
 
-typedef struct _dnsf_ckr_pktctx {
+struct dnsf_ckr_dns_header {
     unsigned short id;
     unsigned char qr;
     unsigned char opcode;
@@ -68,13 +68,13 @@ typedef struct _dnsf_ckr_pktctx {
     unsigned short ancount;
     unsigned short nscount;
     unsigned short arcount;
-    struct dnsf_ckr_pktqsecctx questionsec;
-    struct dnsf_ckr_pktrscrecfmtctx rscrecfmt;
-}dnsf_ckr_pktctx;
+    struct dnsf_ckr_dnspktqsecctx questionsec;
+    struct dnsf_ckr_dnspktrscrecfmtctx rscrecfmt;
+};
 
-dnsf_ckr_pktctx *unpack_dns_data(const unsigned char *rawbuf, const size_t bufsz);
+struct dnsf_ckr_dns_header *unpack_dns_data(const unsigned char *rawbuf, const size_t bufsz);
 
-size_t pack_dns_data(unsigned char **output, dnsf_ckr_pktctx dnspkt);
+size_t pack_dns_data(unsigned char **output, struct dnsf_ckr_dns_header dnspkt);
 
 unsigned char *dnsf_ckr_mk_dnsresponse(size_t *bufsz, const unsigned char *query, const size_t query_size, unsigned long dnsserver_addr);
 

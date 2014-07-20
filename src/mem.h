@@ -10,6 +10,6 @@
 
 #include <stdlib.h>
 
-void *dnsf_ckr_getmem(size_t segsize);
+void *dnsf_ckr_getmemory(size_t segsize);
 
 #endif

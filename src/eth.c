@@ -17,19 +17,19 @@ struct dnsf_ckr_ethernet_frame *dnsf_ckr_parse_ethernet_frame(const unsigned cha
     if (buf == NULL) {
         return NULL;
     }
-    eth = (struct dnsf_ckr_ethernet_frame *) dnsf_ckr_getmem(sizeof(struct dnsf_ckr_ethernet_frame));
+    eth = (struct dnsf_ckr_ethernet_frame *) dnsf_ckr_getmemory(sizeof(struct dnsf_ckr_ethernet_frame));
     memset(eth, 0, sizeof(struct dnsf_ckr_ethernet_frame));
     if (bsize < 14) {
         return NULL;
     }
-    eth = (struct dnsf_ckr_ethernet_frame *) dnsf_ckr_getmem(sizeof(struct dnsf_ckr_ethernet_frame));
+    eth = (struct dnsf_ckr_ethernet_frame *) dnsf_ckr_getmemory(sizeof(struct dnsf_ckr_ethernet_frame));
     memcpy(eth->dest_hw_addr, bp, sizeof(eth->dest_hw_addr));
     bp += sizeof(eth->dest_hw_addr);
     memcpy(eth->src_hw_addr, bp, sizeof(eth->src_hw_addr));
     bp += sizeof(eth->src_hw_addr);
     eth->ether_type = ((unsigned short) (*bp) << 8) | (unsigned short) (*(bp + 1));
     bp += sizeof(eth->ether_type);
-    eth->payload = (unsigned char *) dnsf_ckr_getmem(bsize - 14);
+    eth->payload = (unsigned char *) dnsf_ckr_getmemory(bsize - 14);
     memcpy(eth->payload, bp, bsize - 14);
     eth->payload_size = bsize - 14;
     return eth;
@@ -40,7 +40,7 @@ unsigned char *dnsf_ckr_mk_ethernet_frame(size_t *bsize, struct dnsf_ckr_etherne
     if (bsize == NULL) {
         return NULL;
     }
-    retval = (unsigned char *) dnsf_ckr_getmem(14 + eth.payload_size);
+    retval = (unsigned char *) dnsf_ckr_getmemory(14 + eth.payload_size);
     rp = retval;
     memcpy(rp, eth.dest_hw_addr, 6);
     rp += sizeof(eth.dest_hw_addr);
