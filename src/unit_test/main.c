@@ -6,6 +6,7 @@
 #include "../arp.h"
 #include "../ip.h"
 #include "../udp.h"
+#include "../conf.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -18,20 +19,24 @@ char *dnsf_ckr_victims_ctx_tests() {
     };
     int e;
     struct expected_value expected_values[10] = {
-        {"local1", "127.0.0.1", htonl(0x7f000001)},
-        {"local2", "127.0.0.2", htonl(0x7f000002)},
-        {"local3", "127.0.0.3", htonl(0x7f000003)},
-        {"local4", "127.0.0.4", htonl(0x7f000004)},
-        {"local5", "127.0.0.5", htonl(0x7f000005)},
-        {"local6", "127.0.0.6", htonl(0x7f000006)},
-        {"local7", "127.0.0.7", htonl(0x7f000007)},
-        {"local8", "127.0.0.8", htonl(0x7f000008)},
-        {"local9", "127.0.0.9", htonl(0x7f000009)},
+        { "local1",  "127.0.0.1", htonl(0x7f000001)},
+        { "local2",  "127.0.0.2", htonl(0x7f000002)},
+        { "local3",  "127.0.0.3", htonl(0x7f000003)},
+        { "local4",  "127.0.0.4", htonl(0x7f000004)},
+        { "local5",  "127.0.0.5", htonl(0x7f000005)},
+        { "local6",  "127.0.0.6", htonl(0x7f000006)},
+        { "local7",  "127.0.0.7", htonl(0x7f000007)},
+        { "local8",  "127.0.0.8", htonl(0x7f000008)},
+        { "local9",  "127.0.0.9", htonl(0x7f000009)},
         {"local10", "127.0.0.10", htonl(0x7f00000a)}
     };
     printf("-- running dnsf_ckr_victims_ctx_tests\n");
     for (e = 0; e < sizeof(expected_values) / sizeof(expected_values[0]); e++) {
-        victims = add_victim_to_dnsf_ckr_victims_ctx(victims, expected_values[e].name, strlen(expected_values[e].name), expected_values[e].addr, strlen(expected_values[e].addr));
+        victims = add_victim_to_dnsf_ckr_victims_ctx(victims,
+                      expected_values[e].name,
+                      strlen(expected_values[e].name),
+                      expected_values[e].addr,
+                      strlen(expected_values[e].addr));
     }
     for (vp = victims, e = 0; vp != NULL; vp = vp->next, e++) {
         UTEST_CHECK("Unexpected victim name.", strcmp(vp->name, expected_values[e].name) == 0);
@@ -57,7 +62,11 @@ char *dnsf_ckr_servers_ctx_tests() {
     size_t e;
     printf("-- running dnsf_ckr_servers_ctx_tests\n");
     for (e = 0; e < sizeof(expected_values) / sizeof(expected_values[0]); e++) {
-        servers = add_server_to_dnsf_ckr_servers_ctx(servers, expected_values[e].name, strlen(expected_values[e].name), expected_values[e].addr, strlen(expected_values[e].addr));
+        servers = add_server_to_dnsf_ckr_servers_ctx(servers,
+                       expected_values[e].name,
+                       strlen(expected_values[e].name),
+                       expected_values[e].addr,
+                       strlen(expected_values[e].addr));
     }
     for (sp = servers, e = 0; sp != NULL; sp = sp->next, e++) {
         UTEST_CHECK("Unexpected server name.", strcmp(sp->name, expected_values[e].name) == 0);
@@ -76,13 +85,17 @@ char *dnsf_ckr_hostnames_ctx_tests() {
         in_addr_t naddr;
     };
     struct expected_value expected_values[2] = {
-        {"localhost", "127.0.0.1", htonl(0x7f000001)},
+        {"localhost",           "127.0.0.1",   htonl(0x7f000001)},
         {"localhost.broadcast", "127.0.0.255", htonl(0x7f0000ff)}
     };
     size_t e;
     printf("-- running dnsf_ckr_hostnames_ctx_tests\n");
     for (e = 0; e < sizeof(expected_values) / sizeof(expected_values[0]); e++) {
-        hostnames = add_host_to_dnsf_ckr_hostnames_ctx(hostnames, expected_values[e].name, strlen(expected_values[e].name), expected_values[e].addr, strlen(expected_values[e].addr));
+        hostnames = add_host_to_dnsf_ckr_hostnames_ctx(hostnames,
+                            expected_values[e].name,
+                            strlen(expected_values[e].name),
+                            expected_values[e].addr,
+                            strlen(expected_values[e].addr));
     }
     for (hp = hostnames, e = 0; hp; hp = hp->next, e++) {
         UTEST_CHECK("Unexpected host name.", strcmp(hp->name, expected_values[e].name) == 0);
@@ -101,7 +114,8 @@ char *dnsf_ckr_hostnames_set_ctx_tests() {
     size_t e;
     printf("-- running dnsf_ckr_hostnames_set_ctx_tests\n");
     for (e = 0; expected_values[e][0] != 0; e++) {
-        hnset = add_set_to_dnsf_ckr_hostnames_set_ctx(hnset, expected_values[e], strlen(expected_values[e]));
+        hnset = add_set_to_dnsf_ckr_hostnames_set_ctx(hnset,
+                     expected_values[e], strlen(expected_values[e]));
     }
     for (hp = hnset, e = 0; hp; hp = hp->next, e++) {
         UTEST_CHECK("Unexpected host set name.", strcmp(hp->name, expected_values[e]) == 0);
@@ -127,11 +141,14 @@ char *dnsf_ckr_fakenameserver_ctx_tests() {
     size_t e;
     printf("-- running dnsf_ckr_fakenameserver_ctx_tests\n");
     for (e = 0; e < sizeof(expected_values) / sizeof(expected_values[0]); e++) {
-        fakenameserver = add_faking_to_dnsf_ckr_fakenameserver_ctx(fakenameserver, expected_values[e].with, expected_values[e].mess_up);
+        fakenameserver = add_faking_to_dnsf_ckr_fakenameserver_ctx(fakenameserver,
+                                expected_values[e].with, expected_values[e].mess_up);
     }
     for (fp = fakenameserver, e = 0; fp; fp = fp->next, e++) {
-        UTEST_CHECK("Unexpected \"with\" pointer.", fp->with == (dnsf_ckr_victims_ctx *)expected_values[e].with);
-        UTEST_CHECK("Unexpected \"mess_up\" pointer.", fp->mess_up == (dnsf_ckr_hostnames_set_ctx *)expected_values[e].mess_up);
+        UTEST_CHECK("Unexpected \"with\" pointer.",
+             fp->with == (dnsf_ckr_victims_ctx *)expected_values[e].with);
+        UTEST_CHECK("Unexpected \"mess_up\" pointer.",
+             fp->mess_up == (dnsf_ckr_hostnames_set_ctx *)expected_values[e].mess_up);
     }
     for (e = 0; e < sizeof(expected_values) / sizeof(expected_values[0]); e++) {
         free(expected_values[e].with);
@@ -158,11 +175,15 @@ char *dnsf_ckr_realdnstransactions_ctx_tests() {
     size_t e;
     printf("-- running dnsf_ckr_realdnstransactions_ctx_tests\n");
     for (e = 0; e < sizeof(expected_values) / sizeof(expected_values[0]); e++) {
-        transactions = add_transaction_to_dnsf_ckr_realdnstransactions_ctx(transactions, expected_values[e].victim, expected_values[e].sends_reqs_to);
+        transactions = add_transaction_to_dnsf_ckr_realdnstransactions_ctx(transactions,
+                             expected_values[e].victim, expected_values[e].sends_reqs_to);
     }
     for (tp = transactions, e = 0; tp; tp = tp->next, e++) {
-        UTEST_CHECK("Unexpected \"victim\" pointer.", tp->victim == (dnsf_ckr_victims_ctx *)expected_values[e].victim);
-        UTEST_CHECK("Unexpected \"mess_up\" pointer.", tp->sends_reqs_to == (dnsf_ckr_servers_ctx *)expected_values[e].sends_reqs_to);
+        UTEST_CHECK("Unexpected \"victim\" pointer.",
+                    tp->victim == (dnsf_ckr_victims_ctx *)expected_values[e].victim);
+        UTEST_CHECK("Unexpected \"mess_up\" pointer.",
+                    tp->sends_reqs_to ==
+                (dnsf_ckr_servers_ctx *)expected_values[e].sends_reqs_to);
     }
     for (e = 0; e < sizeof(expected_values) / sizeof(expected_values[0]); e++) {
         free(expected_values[e].victim);
@@ -179,14 +200,16 @@ char *dnsf_ckr_ip2num_test() {
         in_addr_t naddr;
     };
     struct expected_value expected_values[3] = {
-        {"127.0.0.1", htonl(0x7f000001)},
-        {"192.30.70.2", htonl(0xc01e4602)},
+        {      "127.0.0.1", htonl(0x7f000001)},
+        {    "192.30.70.2", htonl(0xc01e4602)},
         {"255.255.255.255", htonl(0xffffffff)}
     };
     size_t e;
     printf("-- dnsf_ckr_ip2num_test\n");
     for (e = 0; e < sizeof(expected_values) / sizeof(expected_values[0]); e++) {
-        UTEST_CHECK("Wrong ip conversion.", dnsf_ckr_ip2num(expected_values[e].addr, strlen(expected_values[e].addr)) == expected_values[e].naddr);
+        UTEST_CHECK("Wrong ip conversion.",
+              dnsf_ckr_ip2num(expected_values[e].addr,
+                  strlen(expected_values[e].addr)) == expected_values[e].naddr);
     }
     printf("-- passed.\n");
     return NULL;
@@ -198,8 +221,8 @@ char *dnsf_ckr_is_valid_ipv4_test() {
         int valid;
     };
     struct expected_return expected_returns[6] = {
-        {"127.0.0.1", 1},  {"192.30.70.167", 1}, {"298.1.1.2", 0},
-        {"71.320.0.2", 0}, {"20.1.301.0", 0},    {"20.1.3.1820", 0}
+        { "127.0.0.1", 1},  {"192.30.70.167", 1},  {  "298.1.1.2", 0},
+        {"71.320.0.2", 0},  {   "20.1.301.0", 0},  {"20.1.3.1820", 0}
     };
     size_t e;
     static char msg[100];
@@ -231,7 +254,15 @@ char *dnsf_ckr_udp_chsum_computing_test() {
     udp.dest = 0xec34;
     udp.len = 0x9a;
     udp.chsum = 0;
-    udp.payload = "\x27\x47\x81\x80\x00\x01\x00\x03\x00\x00\x00\x00\x03\x77\x77\x77\x06\x67\x6f\x6f\x67\x6c\x65\x03\x63\x6f\x6d\x02\x62\x72\x00\x00\x01\x00\x01\x03\x77\x77\x77\x06\x67\x6f\x6f\x67\x6c\x65\x03\x63\x6f\x6d\x02\x62\x72\x00\x00\x01\x00\x01\x00\x00\x01\x2b\x00\x04\xad\xc2\x76\x37\x03\x77\x77\x77\x06\x67\x6f\x6f\x67\x6c\x65\x03\x63\x6f\x6d\x02\x62\x72\x00\x00\x01\x00\x01\x00\x00\x01\x2b\x00\x04\xad\xc2\x76\x38\x03\x77\x77\x77\x06\x67\x6f\x6f\x67\x6c\x65\x03\x63\x6f\x6d\x02\x62\x72\x00\x00\x01\x00\x01\x00\x00\x01\x2b\x00\x04\xad\xc2\x76\x3f\x00\x00\x00\x13\x00\x21\x00\x34\x00\x42\x00\x55";
+    udp.payload = "\x27\x47\x81\x80\x00\x01\x00\x03\x00\x00\x00\x00\x03\x77\x77\x77\x06\x67"
+                  "\x6f\x6f\x67\x6c\x65\x03\x63\x6f\x6d\x02\x62\x72\x00\x00\x01\x00\x01\x03"
+                  "\x77\x77\x77\x06\x67\x6f\x6f\x67\x6c\x65\x03\x63\x6f\x6d\x02\x62\x72\x00"
+                  "\x00\x01\x00\x01\x00\x00\x01\x2b\x00\x04\xad\xc2\x76\x37\x03\x77\x77\x77"
+                  "\x06\x67\x6f\x6f\x67\x6c\x65\x03\x63\x6f\x6d\x02\x62\x72\x00\x00\x01\x00"
+                  "\x01\x00\x00\x01\x2b\x00\x04\xad\xc2\x76\x38\x03\x77\x77\x77\x06\x67\x6f"
+                  "\x6f\x67\x6c\x65\x03\x63\x6f\x6d\x02\x62\x72\x00\x00\x01\x00\x01\x00\x00"
+                  "\x01\x2b\x00\x04\xad\xc2\x76\x3f\x00\x00\x00\x13\x00\x21\x00\x34\x00\x42"
+                  "\x00\x55";
     udp.payload_size = 146;
     printf("-- dnsf_ckr_udp_chsum_computing_test\n");
     buf = dnsf_ckr_mk_udp_dgram(&bufsz, udp);
@@ -270,7 +301,8 @@ char *dnsf_ckr_udp_buffer_parsing_test() {
     udp_buf = dnsf_ckr_mk_udp_dgram(&udp_bufsz, *udp);
     UTEST_CHECK("Udp buffer not equals to 11 bytes.", udp_bufsz == 11);
     for (udp_bufsz = 0; udp_bufsz < 11; udp_bufsz++) {
-        UTEST_CHECK("Udp buffer corrupted or incorrectly assembled.", udp_buf[udp_bufsz] == raw_udp[udp_bufsz]);
+        UTEST_CHECK("Udp buffer corrupted or incorrectly assembled.",
+                            udp_buf[udp_bufsz] == raw_udp[udp_bufsz]);
     }
     free(udp->payload);
     free(udp);
@@ -360,7 +392,8 @@ char *dnsf_ckr_ethernet_buffer_parsing_test() {
     ethernet_frame = dnsf_ckr_mk_ethernet_frame(&ethernet_frame_sz, *eth);
     UTEST_CHECK("Wrong ethernet frame size.", ethernet_frame_sz == buffer_sz);
     for (b = 0; b < buffer_sz; b++) {
-        UTEST_CHECK("Ethernet buffer corrupted or incorrectly assembled.", ethernet_frame[b] == buffer[b]);
+        UTEST_CHECK("Ethernet buffer corrupted or incorrectly assembled.",
+                                           ethernet_frame[b] == buffer[b]);
     }
     free(ethernet_frame);
     free(eth->payload);
@@ -371,7 +404,9 @@ char *dnsf_ckr_ethernet_buffer_parsing_test() {
 
 char *dnsf_ckr_arp_buffer_parsing_test() {
     struct dnsf_ckr_arp_header *arp = NULL;
-    unsigned char *raw_arp = "\xaa\xbb\xcc\xdd\x06\x04\xee\xff\x00\x01\x02\x03\x04\x05\x7f\x00\x00\x01\x06\x07\x08\x09\x0a\x0b\x0c\x7f\x00\x00\x02";
+    unsigned char *raw_arp = "\xaa\xbb\xcc\xdd\x06\x04\xee\xff\x00\x01\x02"
+                             "\x03\x04\x05\x7f\x00\x00\x01\x06\x07\x08\x09"
+                             "\x0a\x0b\x0c\x7f\x00\x00\x02";
     size_t raw_arp_sz = 28, r;
     unsigned char *arp_dgram = NULL;
     size_t arp_dgram_sz = 0;
@@ -413,6 +448,123 @@ char *dnsf_ckr_arp_buffer_parsing_test() {
     return NULL;
 }
 
+int write_buffer_to_file(const char *buffer, size_t bsize, const char *filename) {
+    FILE *fp = fopen(filename, "wb");
+    if (fp == NULL) {
+        return 0;
+    }
+    fwrite(buffer, bsize, 1, fp);
+    fclose(fp);
+    return 1;
+}
+
+char *dnsf_ckr_config_parsing_victims_test() {
+    const char *dnsf_ckr_conf = "# dnsf_ckr_config_parsing_victims_test blah blah.\n"
+                                "victims =\n"
+                                "\tjay-lo: 127.0.0.1\n"
+                                "\tzephyr: 192.30.70.3\n"
+                                "\t\tchina-in-box: 203.10.1.6;\n";
+    dnsf_ckr_victims_ctx *victims = NULL, *vp = NULL;
+    FILE *conf = NULL;
+    struct configurated_victims_ctx {
+        char *name;
+        int name_size;
+        char *addr;
+    };
+    static struct configurated_victims_ctx
+                    configurated_victims[3] = {
+        {"jay-lo",        6,   "127.0.0.1"},
+        {"zephyr",        6, "192.30.70.3"},
+        {"china-in-box", 12,  "203.10.1.6"}
+    };
+    size_t v;
+    in_addr_t addr;
+    static char msg[4096];
+
+    printf("-- dnsf_ckr_config_parsing_victims_test\n");
+
+    UTEST_CHECK("Unable to write to \"dnsf_ckr-test.conf\"",
+                write_buffer_to_file(dnsf_ckr_conf,
+                                     strlen(dnsf_ckr_conf),
+                                     "dnsf_ckr-test.conf") == 1);
+
+    conf = fopen("dnsf_ckr-test.conf", "rb");
+
+    UTEST_CHECK("Unable to open \"dnsf_ckr-test.conf\"",
+                conf != NULL);
+
+
+    victims = dnsf_ckr_get_victims_config(conf);
+
+    UTEST_CHECK("victims config set not read (victims == NULL).",
+                victims != NULL);
+
+    for (vp = victims, v = 0; vp &&
+                       v < sizeof(configurated_victims) /
+                        sizeof(struct configurated_victims_ctx);
+         vp = vp->next, v++) {
+        sprintf(msg, "\"%s\" != \"%s\" (the expected is \"%s\").",
+                vp->name, configurated_victims[v].name, configurated_victims[v].name);
+        UTEST_CHECK(msg, strcmp(vp->name, configurated_victims[v].name) == 0);
+
+        sprintf(msg, "%d != %d (the expected is %d).",
+                vp->name_size, configurated_victims[v].name_size, configurated_victims[v].name_size);
+        UTEST_CHECK(msg, configurated_victims[v].name_size == vp->name_size);
+
+        addr = inet_addr(configurated_victims[v].addr);
+        sprintf(msg, "%.8X != %.8X (the expected is %.8X).", vp->addr, addr, addr);
+        UTEST_CHECK(msg, addr == vp->addr);
+    }
+
+    del_dnsf_ckr_victims_ctx(victims);
+
+    fclose(conf);
+    remove("dnsf_ckr-test.conf");
+
+    printf("-- passed.\n");
+    return NULL;
+}
+
+char *dnsf_ckr_config_parsing_servers_test() {
+    printf("-- dnsf_ckr_config_parsing_servers_test\n");
+    printf("-- passed.\n");
+    return NULL;
+}
+
+char *dnsf_ckr_config_parsing_hostnames_test() {
+    printf("-- dnsf_ckr_config_parsing_hostnames_test\n");
+    printf("-- passed.\n");
+    return NULL;
+}
+
+char *dnsf_ckr_config_parsing_fakenameserver_test() {
+    printf("-- dnsf_ckr_config_parsing_fakenameserver_test\n");
+    printf("-- passed.\n");
+    return NULL;
+}
+
+char *dnsf_ckr_config_parsing_realdnstransactions_test() {
+    printf("-- dnsf_ckr_config_parsing_realdnstransactions_test\n");
+    printf("-- passed.\n");
+    return NULL;
+}
+
+char *dnsf_ckr_config_parsing_intvalues_reading_test() {
+    printf("-- dnsf_ckr_config_parsing_intvalues_reading_test\n");
+    printf("-- passed.\n");
+    return NULL;
+}
+
+char *dnsf_ckr_config_parsing_tests() {
+    UTEST_RUN(dnsf_ckr_config_parsing_victims_test);
+    UTEST_RUN(dnsf_ckr_config_parsing_servers_test);
+    UTEST_RUN(dnsf_ckr_config_parsing_hostnames_test);
+    UTEST_RUN(dnsf_ckr_config_parsing_fakenameserver_test);
+    UTEST_RUN(dnsf_ckr_config_parsing_realdnstransactions_test);
+    UTEST_RUN(dnsf_ckr_config_parsing_intvalues_reading_test);
+    return NULL;
+}
+
 char *run_tests() {
     printf("running unit tests...\n\n");
     UTEST_RUN(dnsf_ckr_victims_ctx_tests);
@@ -429,6 +581,7 @@ char *run_tests() {
     UTEST_RUN(dnsf_ckr_udp_buffer_parsing_test);
     UTEST_RUN(dnsf_ckr_chsum_basic_computing_test);
     UTEST_RUN(dnsf_ckr_udp_chsum_computing_test);
+    UTEST_RUN(dnsf_ckr_config_parsing_tests);
     return NULL;
 }
 

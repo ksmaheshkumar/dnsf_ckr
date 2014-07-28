@@ -90,7 +90,8 @@ static long dnsf_ckr_get_config_section_end(FILE *conf) {
             c = fgetc(conf);
         }
         if (c == ';') {
-            end_offset = ftell(conf) - 1;
+            //end_offset = ftell(conf) - 1;
+            end_offset = ftell(conf);
             break;
         }
         c = fgetc(conf);
@@ -140,7 +141,7 @@ dnsf_ckr_victims_ctx *dnsf_ckr_get_victims_config(FILE *conf) {
                 c = dnsf_ckr_skip_blank(conf);
             }
             memset(cfgline, 0, sizeof(cfgline));
-            while (ftell(conf) < cfg_end && c != '\n' && l < sizeof(cfgline)) {
+            while (ftell(conf) < cfg_end && c != '\n' && c != ';' && l < sizeof(cfgline)) {
                 cfgline[l++] = c;
                 c = fgetc(conf);
             }
@@ -152,7 +153,7 @@ dnsf_ckr_victims_ctx *dnsf_ckr_get_victims_config(FILE *conf) {
                 return NULL;
             }
             memcpy(name, cfgline, l);
-            for (l++;dnsf_ckr_is_blank(cfgline[l]); l++);
+            for (l++; dnsf_ckr_is_blank(cfgline[l]); l++);
             memset(addr, 0, sizeof(addr));
             strncpy(addr, &cfgline[l], sizeof(addr) - 1);
             victims = add_victim_to_dnsf_ckr_victims_ctx(victims, name, strlen(name), addr, strlen(addr));
