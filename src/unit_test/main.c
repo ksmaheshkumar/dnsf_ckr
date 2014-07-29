@@ -468,7 +468,7 @@ char *dnsf_ckr_config_parsing_victims_test() {
     FILE *conf = NULL;
     struct configurated_victims_ctx {
         char *name;
-        int name_size;
+        size_t name_size;
         char *addr;
     };
     static struct configurated_victims_ctx
@@ -516,6 +516,9 @@ char *dnsf_ckr_config_parsing_victims_test() {
         UTEST_CHECK(msg, addr == vp->addr);
     }
 
+    UTEST_CHECK("((((((There are some untested data))))))", v == sizeof(configurated_victims) /
+                                                            sizeof(struct configurated_victims_ctx));
+
     del_dnsf_ckr_victims_ctx(victims);
 
     fclose(conf);
@@ -526,7 +529,50 @@ char *dnsf_ckr_config_parsing_victims_test() {
 }
 
 char *dnsf_ckr_config_parsing_servers_test() {
+    const char *dnsf_ckr_config_data = "dns-servers = the-good: 192.30.70.15\n"
+                                       "the-bad: 192.30.70.16\nthe-ugly: 192.30.70.17;";
+    dnsf_ckr_servers_ctx *servers = NULL, *sp = NULL;
+    struct expected_server_data_ctx {
+        char *name;
+        size_t name_size;
+        char *addr;
+    };
+    struct expected_server_data_ctx expected_server_data[3] = {
+        {"the-good", 8, "192.30.70.15"},
+        { "the-bad", 7, "192.30.70.16"},
+        {"the-ugly", 8, "192.30.70.17"}
+    };
+    in_addr_t addr;
+    size_t e;
+    FILE *conf = NULL;
+    static char msg[255];
     printf("-- dnsf_ckr_config_parsing_servers_test\n");
+    UTEST_CHECK("Unable to write to \"dnsf_ckr-test.conf\"",
+                write_buffer_to_file(dnsf_ckr_config_data,
+                                     strlen(dnsf_ckr_config_data),
+                                     "dnsf_ckr-test.conf") == 1);
+    conf = fopen("dnsf_ckr-test.conf", "rb");
+    UTEST_CHECK("Unable to open \"dnsf_ckr-test.conf\"", conf != NULL);
+    servers = dnsf_ckr_get_servers_config(conf);
+    UTEST_CHECK("servers == NULL", servers != NULL);
+    for (e = 0, sp = servers; sp != NULL && e < sizeof(expected_server_data) /
+                                                sizeof(struct expected_server_data_ctx); e++, sp = sp->next) {
+        sprintf(msg, "\"%s\" != \"%s\" (the expected is \"%s\").", sp->name, expected_server_data[e].name,
+                                                                   expected_server_data[e].name);
+        UTEST_CHECK(msg, strcmp(sp->name, expected_server_data[e].name) == 0);
+        sprintf(msg, "%d != %d (the expected is %d).", sp->name_size, expected_server_data[e].name_size,
+                                                       expected_server_data[e].name_size);
+        UTEST_CHECK(msg, sp->name_size == expected_server_data[e].name_size);
+        addr = inet_addr(expected_server_data[e].addr);
+        sprintf(msg, "%.8X != %.8X (the expected is %.8X).", sp->addr, addr, addr);
+        UTEST_CHECK(msg, sp->addr == addr);
+    }
+    UTEST_CHECK("((((((There are some untested data))))))", e == sizeof(expected_server_data) /
+                                                            sizeof(struct expected_server_data_ctx));
+
+    del_dnsf_ckr_servers_ctx(servers);
+    fclose(conf);
+    remove("dnsf_ckr-test.conf");
     printf("-- passed.\n");
     return NULL;
 }

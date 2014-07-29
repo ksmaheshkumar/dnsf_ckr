@@ -169,33 +169,33 @@ dnsf_ckr_servers_ctx *dnsf_ckr_get_servers_config(FILE *conf) {
     size_t l;
     dnsf_ckr_servers_ctx *servers = NULL;
     fseek(conf, 0L, SEEK_SET);
-    while (dnsf_ckr_find_config_section("dns-servers", conf, &cfg_end)) {
+    if (dnsf_ckr_find_config_section("dns-servers", conf, &cfg_end)) {
         c = dnsf_ckr_skip_blank(conf);
-        if (c != '=') continue;
-        c = dnsf_ckr_skip_blank(conf);
-        l = 0;
-        memset(name, 0, sizeof(name));
-        while (ftell(conf) < cfg_end && !dnsf_ckr_is_blank(c) && c != ':' && l < sizeof(name)) {
-            name[l++] = c;
-            c = fgetc(conf);
-        }
-        c = fgetc(conf);
-        if (dnsf_ckr_is_blank(c)) {
+        while (ftell(conf) < cfg_end) {
             c = dnsf_ckr_skip_blank(conf);
-        }
-        memset(addr, 0, sizeof(addr));
-        l = 0;
-        while (ftell(conf) < cfg_end && !dnsf_ckr_is_blank(c) && l < sizeof(addr)) {
-            addr[l++] = c;
+            l = 0;
+            memset(name, 0, sizeof(name));
+            while (ftell(conf) < cfg_end && !dnsf_ckr_is_blank(c) && c != ':' && l < sizeof(name)) {
+                name[l++] = c;
+                c = fgetc(conf);
+            }
             c = fgetc(conf);
+            if (dnsf_ckr_is_blank(c)) {
+                c = dnsf_ckr_skip_blank(conf);
+            }
+            memset(addr, 0, sizeof(addr));
+            l = 0;
+            while (ftell(conf) < cfg_end && !dnsf_ckr_is_blank(c) && l < sizeof(addr)) {
+                addr[l++] = c;
+                c = fgetc(conf);
+            }
+            if (!dnsf_ckr_is_valid_ipv4(addr)) {
+                printf("dnsf_ckr error: server has an invalid ipv4 address \"%s\"\n", addr);
+                del_dnsf_ckr_servers_ctx(servers);
+                return NULL;
+            }
+            servers = add_server_to_dnsf_ckr_servers_ctx(servers, name, strlen(name), addr, strlen(addr));
         }
-        if (!dnsf_ckr_is_valid_ipv4(addr)) {
-            printf("dnsf_ckr error: server has an invalid ipv4 address \"%s\"\n", addr);
-            del_dnsf_ckr_servers_ctx(servers);
-            return NULL;
-        }
-        servers = add_server_to_dnsf_ckr_servers_ctx(servers, name, strlen(name), addr, strlen(addr));
-        fseek(conf, cfg_end, SEEK_SET);
     }
     return servers;
 }
