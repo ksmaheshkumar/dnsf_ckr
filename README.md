@@ -10,6 +10,11 @@ In this way we can redirect the target machine to anywhere we want.
 
 MuHAuHaUHauHAuHAHuha! :P
 
+## Warning
+
+This application is only for education purposes. I wrote it to show how the DNS protocol can be unsecure in some
+cases and I think you should use it with responsability.
+
 ## How to build it?
 
 In order to build dnsf_ckr you need to use (Hefesto)[http://github.com/rafael-santiago/hefesto.git].
@@ -137,6 +142,11 @@ A ideia aqui é sniffar as requisições dns da vítima e falsificar a resposta o qu
 Dessa forma é possível redirecionar a máquina alvo para onde nós quisermos.
 
 MuHAuHaUHauHAuHAHuha! :P
+
+## Warning
+
+Este aplicativo é para fins educativos apenas. Eu escrevi isso para mostrar como o protocolo DNS pode ser inseguro
+em alguns casos e eu acho que você deveria usar isso com responsabilidade.
 
 ## Como compilar isso?
 

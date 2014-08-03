@@ -16,7 +16,7 @@
                 }
 
 unsigned short dnsf_ckr_compute_chsum(unsigned char *data, size_t dsize) {
-    unsigned long sum = 0;
+    unsigned int sum = 0;
     unsigned char lo, hi;
     size_t d;
     size_t padded_size = dsize + (dsize & 1);
@@ -56,14 +56,14 @@ struct dnsf_ckr_ip_header *dnsf_ckr_parse_ip_dgram(const unsigned char *buf, con
     iph->ttl = buf[8];
     iph->proto = buf[9];
     iph->chsum = (unsigned short)(buf[10] << 8) | (unsigned short)(buf[11]);
-    iph->src = (unsigned long)(buf[12] << 24) |
-               (unsigned long)(buf[13] << 16) |
-               (unsigned long)(buf[14] <<  8) |
-               (unsigned long)(buf[15]);
-    iph->dest = (unsigned long)(buf[16] << 24) |
-                (unsigned long)(buf[17] << 16) |
-                (unsigned long)(buf[18] <<  8) |
-                (unsigned long)(buf[19]);
+    iph->src = (unsigned int)(buf[12] << 24) |
+               (unsigned int)(buf[13] << 16) |
+               (unsigned int)(buf[14] <<  8) |
+               (unsigned int)(buf[15]);
+    iph->dest = (unsigned int)(buf[16] << 24) |
+                (unsigned int)(buf[17] << 16) |
+                (unsigned int)(buf[18] <<  8) |
+                (unsigned int)(buf[19]);
     iph->opt = NULL;
     iph->opt_size = 0;
     iph->payload_size = iph->len - 20;

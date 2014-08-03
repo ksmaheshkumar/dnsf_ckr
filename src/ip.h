@@ -21,8 +21,8 @@ struct dnsf_ckr_ip_header {
     unsigned char ttl;
     unsigned char proto;
     unsigned short chsum;
-    unsigned long src;
-    unsigned long dest;
+    unsigned int src;
+    unsigned int dest;
     unsigned char *opt;
     size_t opt_size;
     unsigned char *payload;
