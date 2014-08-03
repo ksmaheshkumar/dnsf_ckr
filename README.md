@@ -143,7 +143,7 @@ Dessa forma é possível redirecionar a máquina alvo para onde nós quisermos.
 
 MuHAuHaUHauHAuHAHuha! :P
 
-## Warning
+## Aviso
 
 Este aplicativo é para fins educativos apenas. Eu escrevi isso para mostrar como o protocolo DNS pode ser inseguro
 em alguns casos e eu acho que você deveria usar isso com responsabilidade.
