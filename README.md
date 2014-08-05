@@ -12,7 +12,7 @@ MuHAuHaUHauHAuHAHuha! :P
 
 ## Warning
 
-This application is only for education purposes. I wrote it to show how the DNS protocol can be unsecure in some
+This application is only for educational purposes. I wrote it to show how the DNS protocol can be unsecure in some
 cases and I think you should use it with responsibility.
 
 ## How to build it?
