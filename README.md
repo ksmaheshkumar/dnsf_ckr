@@ -13,11 +13,11 @@ MuHAuHaUHauHAuHAHuha! :P
 ## Warning
 
 This application is only for education purposes. I wrote it to show how the DNS protocol can be unsecure in some
-cases and I think you should use it with responsability.
+cases and I think you should use it with responsibility.
 
 ## How to build it?
 
-In order to build dnsf_ckr you need to use (Hefesto)[http://github.com/rafael-santiago/hefesto.git].
+In order to build dnsf_ckr you need to use [Hefesto](http://github.com/rafael-santiago/hefesto.git).
 
 After follow the steps to install Hefesto in your system, all you need to do (on shell) inside dnsf_ckr src
 subdirectory is invoke hefesto. Something like this:
@@ -150,7 +150,7 @@ em alguns casos e eu acho que você deveria usar isso com responsabilidade.
 
 ## Como compilar isso?
 
-Para compilar o dnsf_ckr você precisa usar o (Hefesto)[http://github.com/rafael-santiago/hefesto.git].
+Para compilar o dnsf_ckr você precisa usar o [Hefesto](http://github.com/rafael-santiago/hefesto.git).
 
 Depois de seguir os passos para instalar o Hefesto em seu sistema, tudo o que você precisa fazer (no shell)
 dentro do subdiretório src do dnsf_ckr é invocar o hefesto. Algo nessa linha:
