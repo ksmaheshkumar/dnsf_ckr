@@ -145,6 +145,7 @@ dnsf_ckr_victims_ctx *dnsf_ckr_get_victims_config(FILE *conf) {
                 cfgline[l++] = c;
                 c = fgetc(conf);
             }
+            if (cfgline[0] == 0) continue;
             l = 0;
             memset(name, 0, sizeof(name));
             for (l = 0; cfgline[l] != ':' && cfgline[l] != 0; l++);
@@ -179,6 +180,7 @@ dnsf_ckr_servers_ctx *dnsf_ckr_get_servers_config(FILE *conf) {
                 name[l++] = c;
                 c = fgetc(conf);
             }
+            if (name[0] == 0) continue;
             c = fgetc(conf);
             if (dnsf_ckr_is_blank(c)) {
                 c = dnsf_ckr_skip_blank(conf);

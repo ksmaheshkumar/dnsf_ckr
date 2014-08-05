@@ -148,12 +148,14 @@ int main(int argc, char **argv) {
 
     victims = dnsf_ckr_get_victims_config(fp);
     if (victims == NULL) {
+        printf("dnsf_ckr ERROR: while was trying to load victims configuration.\n");
         fclose(fp);
         return 1;
     }
 
     servers = dnsf_ckr_get_servers_config(fp);
     if (servers == NULL) {
+        printf("dnsf_ckr ERROR: while was trying to load servers configuration.\n");
         del_dnsf_ckr_victims_ctx(victims);
         fclose(fp);
         return 1;
@@ -161,6 +163,7 @@ int main(int argc, char **argv) {
 
     hostnames = dnsf_ckr_get_hostnames_config(fp);
     if (hostnames == NULL) {
+        printf("dnsf_ckr ERROR: while was trying to load namelists.\n");
         del_dnsf_ckr_victims_ctx(victims);
         del_dnsf_ckr_servers_ctx(servers);
         fclose(fp);
@@ -169,6 +172,7 @@ int main(int argc, char **argv) {
 
     fakenameserver = dnsf_ckr_get_fakenameserver_config(fp, victims, hostnames);
     if (fakenameserver == NULL) {
+        printf("dnsf_ckr ERROR: while was trying to load fake-nameserver configuration.\n");
         del_dnsf_ckr_victims_ctx(victims);
         del_dnsf_ckr_servers_ctx(servers);
         del_dnsf_ckr_hostnames_set_ctx(hostnames);
@@ -177,6 +181,7 @@ int main(int argc, char **argv) {
 
     transactions = dnsf_ckr_get_realdnstransactions_config(fp, victims, servers);
     if (transactions == NULL) {
+        printf("dnsf_ckr ERROR: while was trying to load real-dns-transactions configuration.\n");
         del_dnsf_ckr_victims_ctx(victims);
         del_dnsf_ckr_servers_ctx(servers);
         del_dnsf_ckr_hostnames_set_ctx(hostnames);
