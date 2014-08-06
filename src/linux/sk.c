@@ -35,6 +35,7 @@ static int dnsf_ckr_get_iface_index(const char *iface) {
 dnsf_ckr_sk dnsf_ckr_create_linl1sk(const char *iface) {
     dnsf_ckr_sk sk = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     struct sockaddr_ll sll;
+    memset(&sll, 0, sizeof(sll));
     sll.sll_family = AF_PACKET;
     sll.sll_protocol = htons(ETH_P_ALL);
     sll.sll_ifindex = dnsf_ckr_get_iface_index(iface);

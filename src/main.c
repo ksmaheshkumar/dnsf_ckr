@@ -212,6 +212,7 @@ int main(int argc, char **argv) {
     del_dnsf_ckr_servers_ctx(servers);
     del_dnsf_ckr_hostnames_set_ctx(hostnames);
     del_dnsf_ckr_realdnstransactions_ctx(transactions);
+    del_dnsf_ckr_fakenameserver_ctx(fakenameserver);
     if (fp != NULL) {
         fclose(fp);
     }

@@ -102,6 +102,7 @@ char *dnsf_ckr_get_mac_by_addr(in_addr_t addr, const char *loiface, const int ma
                         free(ip);
                     }
                     dnsf_ckr_arp_header_free(arp_reply);
+                    free(arp_reply);
                 }
             }
         }

@@ -149,6 +149,7 @@ dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t
                             free(udp->payload);
                             free(udp);
                             free(dns);
+                            free(hostname);
                             return dnsf_ckr_action_none;
                         }
                     }
