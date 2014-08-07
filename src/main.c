@@ -177,6 +177,7 @@ int main(int argc, char **argv) {
         del_dnsf_ckr_servers_ctx(servers);
         del_dnsf_ckr_hostnames_set_ctx(hostnames);
         fclose(fp);
+        return 1;
     }
 
     transactions = dnsf_ckr_get_realdnstransactions_config(fp, victims, servers);
@@ -185,7 +186,9 @@ int main(int argc, char **argv) {
         del_dnsf_ckr_victims_ctx(victims);
         del_dnsf_ckr_servers_ctx(servers);
         del_dnsf_ckr_hostnames_set_ctx(hostnames);
+        del_dnsf_ckr_fakenameserver_ctx(fakenameserver);
         fclose(fp);
+        return 1;
     }
 
     arpspf_pkt_nr = dnsf_ckr_get_core_int_config(fp, "arpspf-pkt-nr", 3);

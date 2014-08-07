@@ -367,6 +367,7 @@ dnsf_ckr_fakenameserver_ctx *dnsf_ckr_get_fakenameserver_config(FILE *conf, dnsf
                     if (dnsf_ckr_is_comment(fkdecl[0])) continue;
                     if (ftell(conf) < cfg_end) {
                         if (dnsf_ckr_parse_faking_decl(fkdecl, &nameserver, victims, hset) == 0) {
+                            del_dnsf_ckr_fakenameserver_ctx(nameserver);
                             return NULL;
                         }
                     }
