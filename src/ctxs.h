@@ -51,6 +51,13 @@
                             (r)->sends_reqs_to = NULL,\
                             (r)->next = NULL )
 
+#define new_dnsf_ckr_dnsresolvcache_ctx(d) ( (d) = (dnsf_ckr_dnsresolvcache_ctx *)\
+                            dnsf_ckr_getmemory(sizeof(dnsf_ckr_dnsresolvcache_ctx)),\
+                            (d)->dname = NULL,\
+                            (d)->dname_size = 0,\
+                            (d)->reply = NULL,\
+                            (d)->reply_size = 0 )
+
 // dnsf_ckr_victims_ctx stuff
 
 dnsf_ckr_victims_ctx *add_victim_to_dnsf_ckr_victims_ctx(dnsf_ckr_victims_ctx *victims, const char *name, size_t nsize,
@@ -99,5 +106,13 @@ void del_dnsf_ckr_fakenameserver_ctx(dnsf_ckr_fakenameserver_ctx *nameserver);
 dnsf_ckr_realdnstransactions_ctx *add_transaction_to_dnsf_ckr_realdnstransactions_ctx(dnsf_ckr_realdnstransactions_ctx *tr, dnsf_ckr_victims_ctx *victim, dnsf_ckr_servers_ctx *send_reqs_to);
 dnsf_ckr_realdnstransactions_ctx *get_dnsf_ckr_realdnstransactions_ctx_tail(dnsf_ckr_realdnstransactions_ctx *tr);
 void del_dnsf_ckr_realdnstransactions_ctx(dnsf_ckr_realdnstransactions_ctx *tr);
+
+// dnsf_ckr_dnsresolvcache_ctx stuff
+
+dnsf_ckr_dnsresolvcache_ctx *push_resolution_to_dnsf_ckr_dnsresolvcache_ctx(dnsf_ckr_dnsresolvcache_ctx **resolv, size_t max_cache_size, const char *dname, const size_t dname_size, const unsigned char *reply, const size_t reply_size);
+dnsf_ckr_dnsresolvcache_ctx *pop_back_resolution_from_dnsf_ckr_dnsresolvcache_ctx(dnsf_ckr_dnsresolvcache_ctx **resolv);
+dnsf_ckr_dnsresolvcache_ctx *get_dnsf_ckr_dnsresolvcache_ctx_dname(const char *dname, dnsf_ckr_dnsresolvcache_ctx *resolv);
+size_t count_of_dnsf_ckr_dnsresolvcache_ctx(dnsf_ckr_dnsresolvcache_ctx *resolv);
+void del_dnsf_ckr_dnsresolvcache_ctx(dnsf_ckr_dnsresolvcache_ctx *resolv);
 
 #endif

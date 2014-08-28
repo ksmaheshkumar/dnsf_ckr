@@ -31,13 +31,13 @@ static void sigsegv_watchdog(int signo);
 
 static FILE *get_attack_map_fp(const char *option);
 
-static void start_nbots(dnsf_ckr_victims_ctx *victims,
-                        dnsf_ckr_servers_ctx *servers,
-                        dnsf_ckr_hostnames_set_ctx *hostnames,
-                        dnsf_ckr_realdnstransactions_ctx *transactions,
-                        dnsf_ckr_fakenameserver_ctx *fakenameserver,
-                        char *iface, int arpspf_pkt_nr,
-                        int dnsspf_ttl);
+static void start_nbots(const dnsf_ckr_victims_ctx *victims,
+                        const dnsf_ckr_servers_ctx *servers,
+                        const dnsf_ckr_hostnames_set_ctx *hostnames,
+                        const dnsf_ckr_realdnstransactions_ctx *transactions,
+                        const dnsf_ckr_fakenameserver_ctx *fakenameserver,
+                        const char *iface, const int arpspf_pkt_nr,
+                        const int dnsspf_ttl, const int reqhandlers_nr);
 
 static void sigint_watchdog(int sig) {
     dnsf_ckr_request_abort();
@@ -60,24 +60,25 @@ static FILE *get_attack_map_fp(const char *option) {
     return fp;
 }
 
-static void start_nbots(dnsf_ckr_victims_ctx *victims,
-                        dnsf_ckr_servers_ctx *servers,
-                        dnsf_ckr_hostnames_set_ctx *hostnames,
-                        dnsf_ckr_realdnstransactions_ctx *transactions,
-                        dnsf_ckr_fakenameserver_ctx *fakenameserver,
-                        char *iface, int arpspf_pkt_nr,
-                        int dnsspf_ttl) {
+static void start_nbots(const dnsf_ckr_victims_ctx *victims,
+                        const dnsf_ckr_servers_ctx *servers,
+                        const dnsf_ckr_hostnames_set_ctx *hostnames,
+                        const dnsf_ckr_realdnstransactions_ctx *transactions,
+                        const dnsf_ckr_fakenameserver_ctx *fakenameserver,
+                        const char *iface, const int arpspf_pkt_nr,
+                        const int dnsspf_ttl, const int reqhandlers_nr) {
     struct dnsf_ckr_bot_routine_ctx spf_args, rly_args;
 
     //  the spoofing thread routine arguments...
-    spf_args.arg[0] = transactions;
-    spf_args.arg[1] = iface;
-    spf_args.arg[2] = &arpspf_pkt_nr;
+    spf_args.arg[0] = (void *)transactions;
+    spf_args.arg[1] = (void *)iface;
+    spf_args.arg[2] = (void *)&arpspf_pkt_nr;
 
     //  the relay thread routine arguments...
-    rly_args.arg[0] = transactions;
-    rly_args.arg[1] = fakenameserver;
-    rly_args.arg[2] = &dnsspf_ttl;
+    rly_args.arg[0] = (void *)transactions;
+    rly_args.arg[1] = (void *)fakenameserver;
+    rly_args.arg[2] = (void *)&dnsspf_ttl;
+    rly_args.arg[3] = (void *)&reqhandlers_nr;
 
     pthread_attr_init(&spf_thread_attr);
     pthread_create(&spf_thread, &spf_thread_attr, dnsf_ckr_arp_spoofing_bot_routine, &spf_args);
@@ -101,6 +102,7 @@ int main(int argc, char **argv) {
     int exit_code = 0;
     int arpspf_pkt_nr = 0;
     int dnsspf_ttl = 0;
+    int reqhandlers_nr = 0;
 
     if (argc > 1) {
         memset(iface, 0, sizeof(iface));
@@ -195,6 +197,8 @@ int main(int argc, char **argv) {
 
     dnsspf_ttl = dnsf_ckr_get_core_int_config(fp, "dnsspf-ttl", 240);
 
+    reqhandlers_nr = dnsf_ckr_get_core_int_config(fp, "reqhandlers-nr", DNSF_CKR_REQ_HANDLERS_NR) % (DNSF_CKR_REQ_HANDLERS_NR + 1);
+
     signal(SIGINT, sigint_watchdog);
     signal(SIGTERM, sigint_watchdog);
     signal(SIGHUP, sigint_watchdog);
@@ -208,7 +212,7 @@ int main(int argc, char **argv) {
         fclose(fp);
         fp = NULL;
         dnsf_ckr_init_sockio(iface);
-        start_nbots(victims, servers, hostnames, transactions, fakenameserver, iface, arpspf_pkt_nr, dnsspf_ttl);
+        start_nbots(victims, servers, hostnames, transactions, fakenameserver, iface, arpspf_pkt_nr, dnsspf_ttl, reqhandlers_nr);
         dnsf_ckr_fini_sockio();
     }
     del_dnsf_ckr_victims_ctx(victims);

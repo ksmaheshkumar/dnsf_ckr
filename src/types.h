@@ -28,6 +28,8 @@
 
 #endif
 
+#define DNSF_CKR_REQ_HANDLERS_NR 50
+
 typedef struct _dnsf_ckr_victims_ctx {
     char *name;
     size_t name_size;
@@ -77,9 +79,21 @@ typedef struct _dnsf_ckr_dnsproto {
     dnsf_ckr_hostnames_ctx *hostnames;
 }dnsf_ckr_dnsproto;
 
+typedef struct _dnsf_ckr_dnsresolvcache_ctx {
+    char *dname;
+    size_t dname_size;
+    unsigned char *reply;
+    size_t reply_size;
+    struct _dnsf_ckr_dnsresolvcache_ctx *next;
+}dnsf_ckr_dnsresolvcache_ctx;
+
 #if DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_FREEBSD || DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_LINUX
 
+#include <pthread.h>
+
 typedef int dnsf_ckr_sk;
+
+typedef pthread_t dnsf_ckr_thread;
 
 #elif DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_WINDOWS
 

@@ -126,6 +126,7 @@ These are the current entries that you can use to setup the application accordin
 |:-------------:|:--------:|:----------------------------------------------------------------------------------------:|
 |  dnsspf-ttl   |    int   | Indicates the time in seconds that the dns resolution will be cached on victim's machine |
 | arpspf-pkt-nr |    int   | Indicates the number of arp packets sent to the victim on each arp spoof attempt.        |
+| reqhandlers-nr|    int   | Indicates the number of simultaneous handlers for the captured packets.                  |
 
 
 Have fun!
@@ -259,7 +260,7 @@ Estas são as entradas que atualmente você pode usar para colocar a aplicação de 
 |:-------------:|:--------:|:----------------------------------------------------------------------------------------:|
 |  dnsspf-ttl   |    int   | Indicar o tempo em segundos que a resolução dns será cacheada na máquina da vítima.      |
 | arpspf-pkt-nr |    int   | Indicar o número de pacotes arp enviados para a vítima à cada tentativa de arp spoof.    |
-
+| reqhandlers-nr|    int   | Indicar o número de tratadores simultâneos para os pacotes capturados.                   |
 
 Divirta-se!
 

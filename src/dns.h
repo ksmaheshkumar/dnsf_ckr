@@ -76,6 +76,6 @@ struct dnsf_ckr_dns_header *unpack_dns_data(const unsigned char *rawbuf, const s
 
 size_t pack_dns_data(unsigned char **output, struct dnsf_ckr_dns_header dnspkt);
 
-unsigned char *dnsf_ckr_mk_dnsresponse(size_t *bufsz, const unsigned char *query, const size_t query_size, unsigned long dnsserver_addr);
+unsigned char *dnsf_ckr_mk_dnsresponse(size_t *bufsz, const unsigned char *query, const size_t query_size, unsigned int dnsserver_addr);
 
 #endif

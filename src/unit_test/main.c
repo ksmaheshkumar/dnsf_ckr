@@ -578,25 +578,193 @@ char *dnsf_ckr_config_parsing_servers_test() {
 }
 
 char *dnsf_ckr_config_parsing_hostnames_test() {
+    const char *data = "namelist set_01 = \n\twww.xkcd.com: 127.0.0.1\n\tgithub.com:127.0.0.2\n\twww.reddit.com:127.0.0.3\n\twww.qotsa.com: 127.0.0.4\n;\n"
+                       "namelist set_02 = \n\tcat-v.org:127.0.0.5\n\twww.opensource.org:127.0.0.6\n\twww.linux.org: 127.0.0.7\n\twww.apple.com: 127.0.0.8\n;\n"
+                       "namelist set_03 = \n\twww.blackkeys.com: 127.0.0.9\n\twww.valgrind.org: 127.0.0.10\n;\n";
+    FILE *config = NULL;
+    struct set_data_ctx {
+        char *setname;
+        char *domain;
+        size_t dsize;
+        char *addr;
+    };
+    dnsf_ckr_hostnames_set_ctx *hostnames = NULL, *hp = NULL;
+    dnsf_ckr_hostnames_ctx *hpp = NULL;
+    size_t h;
+    in_addr_t addr;
+    static char msg[255] = "";
+    struct set_data_ctx set_data[11] = {
+        {"set_01", "www.xkcd.com",       12, "127.0.0.1"},
+        {"set_01", "github.com",         10, "127.0.0.2"},
+        {"set_01", "www.reddit.com",     14, "127.0.0.3"},
+        {"set_01", "www.qotsa.com",      13, "127.0.0.4"},
+        {"set_02", "cat-v.org",           9, "127.0.0.5"},
+        {"set_02", "www.opensource.org", 18, "127.0.0.6"},
+        {"set_02", "www.linux.org",      13, "127.0.0.7"},
+        {"set_02", "www.apple.com",      13, "127.0.0.8"},
+        {"set_03", "www.blackkeys.com",  17, "127.0.0.9"},
+        {"set_03", "www.valgrind.org",   16, "127.0.0.10"}
+    };
     printf("-- dnsf_ckr_config_parsing_hostnames_test\n");
+    UTEST_CHECK("Unable to write to \"dnsf_ckr-test.conf\"",
+                write_buffer_to_file(data,
+                                     strlen(data),
+                                     "dnsf_ckr-test.conf") == 1);
+    config = fopen("dnsf_ckr-test.conf", "rb");
+    hostnames = dnsf_ckr_get_hostnames_config(config);
+    fclose(config);
+    remove("dnsf_ckr-test.conf");
+    UTEST_CHECK("hostnames == NULL", hostnames != NULL);
+    h = 0;
+    for (hp = hostnames; hp; hp = hp->next) {
+        h++;
+    }
+    UTEST_CHECK("h != 3", h == 3);
+    h = 0;
+    for (hp = hostnames; hp; hp = hp->next) {
+        for (hpp = hp->hostnames; hpp; hpp = hpp->next) {
+            sprintf(msg, "wrong set name [expected:%s]", set_data[h].setname);
+            UTEST_CHECK(msg, strcmp(hp->name, set_data[h].setname) == 0);
+            sprintf(msg, "wrong domain name [expected:%s]", set_data[h].domain);
+            UTEST_CHECK(msg, strcmp(hpp->name, set_data[h].domain) == 0);
+            sprintf(msg, "wrong domain name size [expected:%d]", set_data[h].dsize);
+            UTEST_CHECK(msg, hpp->name_size == set_data[h].dsize);
+            addr = inet_addr(set_data[h].addr);
+            sprintf(msg, "wrong addrinfo [expected:0x%.8x]", set_data[h].addr);
+            UTEST_CHECK(msg, hpp->addr == addr);
+            h++;
+        }
+    }
+    del_dnsf_ckr_hostnames_set_ctx(hostnames);
     printf("-- passed.\n");
     return NULL;
 }
 
 char *dnsf_ckr_config_parsing_fakenameserver_test() {
+    dnsf_ckr_hostnames_set_ctx *hostnames = NULL, *hp = NULL;
+    dnsf_ckr_victims_ctx *victims = NULL, *vp = NULL;
+    dnsf_ckr_fakenameserver_ctx *fakenameserver = NULL, *fp = NULL;
+    const char *config_data = "namelist test-names = \n"
+                              "\twww.xkcd.com: 127.0.0.1\n"
+                              "\twww.amazon.com: 127.0.0.2\n"
+                              ";\n"
+                              "namelist local-names = \n"
+                              "\tswap: 172.16.0.171\n"
+                              "\thoder: 192.168.7.170\n"
+                              ";\n"
+                              "victims = \n"
+                              "\tpenelope: 192.30.70.7\n"
+                              "\twork-machine: 192.168.7.140\n"
+                              "\told-work-machine: 192.168.7.89\n"
+                              ";\n"
+                              "fake-nameserver = \n"
+                              "\twith penelope mess up test-names\n"
+                              "\twith work-machine mess up local-names\n"
+                              "\twith old-work-machine mess up test-names, local-names\n"
+                              ";";
+    FILE *config = NULL;
     printf("-- dnsf_ckr_config_parsing_fakenameserver_test\n");
+    UTEST_CHECK("Unable to write to \"dnsf_ckr-test.conf\"",
+                write_buffer_to_file(config_data,
+                                     strlen(config_data),
+                                     "dnsf_ckr-test.conf") == 1);
+    config = fopen("dnsf_ckr-test.conf", "rb");
+    UTEST_CHECK("config == NULL", config != NULL);
+    victims = dnsf_ckr_get_victims_config(config);
+    UTEST_CHECK("victims == NULL", victims != NULL);
+    hostnames = dnsf_ckr_get_hostnames_config(config);
+    UTEST_CHECK("hostnames == NULL", hostnames != NULL);
+    fakenameserver = dnsf_ckr_get_fakenameserver_config(config, victims, hostnames);
+
+    fp = fakenameserver;
+
+    UTEST_CHECK("fp == NULL", fp != NULL);
+    hp = get_dnsf_ckr_hostnames_set_ctx_set("test-names", hostnames);
+    vp = get_dnsf_ckr_victims_ctx_victim("penelope", victims);
+    UTEST_CHECK("fp->victim != penelope", fp->with == vp);
+    UTEST_CHECK("fp->mess_up != google-names", fp->mess_up == hp);
+
+    fp = fp->next;
+
+    UTEST_CHECK("fp == NULL", fp != NULL);
+    hp = get_dnsf_ckr_hostnames_set_ctx_set("local-names", hostnames);
+    vp = get_dnsf_ckr_victims_ctx_victim("work-machine", victims);
+    UTEST_CHECK("fp->victim != work-machine", fp->with == vp);
+    UTEST_CHECK("fp->mess_up != local-names", fp->mess_up == hp);
+
+    fp = fp->next;
+
+    UTEST_CHECK("fp == NULL", fp != NULL);
+    hp = get_dnsf_ckr_hostnames_set_ctx_set("test-names", hostnames);
+    vp = get_dnsf_ckr_victims_ctx_victim("old-work-machine", victims);
+    UTEST_CHECK("fp->victim != old-work-machine", fp->with == vp);
+    UTEST_CHECK("fp->mess_up != google-names", fp->mess_up == hp);
+
+    hp = get_dnsf_ckr_hostnames_set_ctx_set("local-names", hostnames);
+    UTEST_CHECK("fp->mess_up->next == NULL", fp->mess_up != NULL);
+    UTEST_CHECK("fp->mess_up->next != local-names", fp->mess_up->next == hp);
+
+    del_dnsf_ckr_victims_ctx(victims);
+    del_dnsf_ckr_hostnames_set_ctx(hostnames);
+    del_dnsf_ckr_fakenameserver_ctx(fakenameserver);
+
+    fclose(config);
+    remove("dnsf_ckr-test.conf");
     printf("-- passed.\n");
     return NULL;
 }
 
 char *dnsf_ckr_config_parsing_realdnstransactions_test() {
+    const char *config_data = "dns-servers = \n"
+                              "\ttest-dns : 192.168.7.15\n"
+                              ";"
+                              "victims = \n"
+                              "\tloopback\t\t\t\t\t\t\t:127.0.0.1;\n"
+                              "real-dns-transactions = \n"
+                              "loopback sends requests to test-dns\n;";
+    FILE *config = NULL;
+    dnsf_ckr_victims_ctx *victims = NULL;
+    dnsf_ckr_servers_ctx *servers = NULL;
+    dnsf_ckr_realdnstransactions_ctx *transactions = NULL;
     printf("-- dnsf_ckr_config_parsing_realdnstransactions_test\n");
+    UTEST_CHECK("Unable to write to \"dnsf_ckr-test.conf\"",
+                write_buffer_to_file(config_data,
+                                     strlen(config_data),
+                                     "dnsf_ckr-test.conf") == 1);
+    config = fopen("dnsf_ckr-test.conf", "rb");
+    victims = dnsf_ckr_get_victims_config(config);
+    UTEST_CHECK("victims == NULL", victims != NULL);
+    servers = dnsf_ckr_get_servers_config(config);
+    UTEST_CHECK("servers == NULL", servers != NULL);
+    transactions = dnsf_ckr_get_realdnstransactions_config(config, victims, servers);
+    UTEST_CHECK("transactions == NULL", transactions != NULL);
+    UTEST_CHECK("transactions->victim != victims", transactions->victim == victims);
+    UTEST_CHECK("transactions->sends_reqs_to != servers", transactions->sends_reqs_to == servers);
+    del_dnsf_ckr_victims_ctx(victims);
+    del_dnsf_ckr_servers_ctx(servers);
+    del_dnsf_ckr_realdnstransactions_ctx(transactions);
+    remove("dnsf_ckr-test.conf");
     printf("-- passed.\n");
     return NULL;
 }
 
 char *dnsf_ckr_config_parsing_intvalues_reading_test() {
+    const char *data = "dnsf_ckr-core =\n\tintvalue:101\n\tx:0\n\ty:1\n\tz:2\n;\n";
+    FILE *config = NULL;
     printf("-- dnsf_ckr_config_parsing_intvalues_reading_test\n");
+    UTEST_CHECK("Unable to write to \"dnsf_ckr-test.conf\"",
+                write_buffer_to_file(data,
+                                     strlen(data),
+                                     "dnsf_ckr-test.conf") == 1);
+    config = fopen("dnsf_ckr-test.conf", "rb");
+    UTEST_CHECK("config == NULL", config != NULL);
+    remove("dnsf_ckr-test.conf");
+    UTEST_CHECK("wrong intvalue [expected:101]", dnsf_ckr_get_core_int_config(config, "intvalue", 99) == 101);
+    UTEST_CHECK("wrong x [expected:0]", dnsf_ckr_get_core_int_config(config, "x", 99) == 0);
+    UTEST_CHECK("wrong y [expected:1]", dnsf_ckr_get_core_int_config(config, "y", 99) == 1);
+    UTEST_CHECK("wrong z [expected:2]", dnsf_ckr_get_core_int_config(config, "z", 99) == 2);
+    UTEST_CHECK("wrong z_ [expected:99]", dnsf_ckr_get_core_int_config(config, "z_", 99) == 99);
+    fclose(config);
     printf("-- passed.\n");
     return NULL;
 }
@@ -611,6 +779,74 @@ char *dnsf_ckr_config_parsing_tests() {
     return NULL;
 }
 
+char *dnsf_ckr_dnsresolvcache_ctx_tests() {
+    dnsf_ckr_dnsresolvcache_ctx *resolv = NULL, *rp;
+    struct resolutions_cache {
+        char *dname;
+        size_t dname_size;
+        unsigned char *reply;
+        size_t reply_size;
+    };
+    static char message[1024];
+    static struct resolutions_cache resolutions_cache_data[6] = {
+        {"penelope-charmosa",  17, "REP_0", 5},
+        {"dick-vigarista",     14, "REP_1", 5},
+        {"quadrilha-de-morte", 18, "REP_2", 5},
+        {"barao-vermelho",     14, "REP_3", 5},
+        {"irmaos-pedregulho",  17, "REP_4", 5},
+        {"muttley",             7, "REP_5", 5}
+    };
+    int r;
+    printf("-- dnsf_ckr_dnsresolvcache_ctx_tests\n");
+    //  basic push tests.
+    for (r = 0; r < 6; r++) {
+        resolv = push_resolution_to_dnsf_ckr_dnsresolvcache_ctx(&resolv, 100,
+                                                                resolutions_cache_data[r].dname,
+                                                                resolutions_cache_data[r].dname_size,
+                                                                resolutions_cache_data[r].reply,
+                                                                resolutions_cache_data[r].reply_size);
+    }
+    rp = resolv;
+    for (r = 5; r > -1; r--, rp = rp->next) {
+        UTEST_CHECK("rp == NULL", rp != NULL);
+        sprintf(message, "%s != %s (expected: %s)", rp->dname, resolutions_cache_data[r].dname, resolutions_cache_data[r].dname);
+        UTEST_CHECK(message, strcmp(rp->dname, resolutions_cache_data[r].dname) == 0);
+        sprintf(message, "%d != %d (expected: %d)", rp->dname_size, resolutions_cache_data[r].dname_size, resolutions_cache_data[r].dname_size);
+        UTEST_CHECK(message, rp->dname_size == resolutions_cache_data[r].dname_size);
+        sprintf(message, "%s != %s (expected: %s)", rp->reply, resolutions_cache_data[r].reply, resolutions_cache_data[r].reply);
+        UTEST_CHECK(message, strcmp(rp->reply, resolutions_cache_data[r].reply) == 0);
+        sprintf(message, "%d != %d (expected: %d)", rp->reply_size, resolutions_cache_data[r].reply_size, resolutions_cache_data[r].reply_size);
+        UTEST_CHECK(message, rp->reply_size == resolutions_cache_data[r].reply_size);
+    }
+    UTEST_CHECK("resolv not totally visited.", rp == NULL);
+    del_dnsf_ckr_dnsresolvcache_ctx(resolv);
+    //  cache limit test.
+    resolv = NULL;
+    for (r = 0; r < 6; r++) {
+        resolv = push_resolution_to_dnsf_ckr_dnsresolvcache_ctx(&resolv, 4,
+                                                                resolutions_cache_data[r].dname,
+                                                                resolutions_cache_data[r].dname_size,
+                                                                resolutions_cache_data[r].reply,
+                                                                resolutions_cache_data[r].reply_size);
+    }
+    rp = resolv;
+    for (r = 5; r > 1; r--, rp = rp->next) {
+        UTEST_CHECK("rp == NULL", rp != NULL);
+        sprintf(message, "%s != %s (expected: %s)", rp->dname, resolutions_cache_data[r].dname, resolutions_cache_data[r].dname);
+        UTEST_CHECK(message, strcmp(rp->dname, resolutions_cache_data[r].dname) == 0);
+        sprintf(message, "%d != %d (expected: %d)", rp->dname_size, resolutions_cache_data[r].dname_size, resolutions_cache_data[r].dname_size);
+        UTEST_CHECK(message, rp->dname_size == resolutions_cache_data[r].dname_size);
+        sprintf(message, "%s != %s (expected: %s)", rp->reply, resolutions_cache_data[r].reply, resolutions_cache_data[r].reply);
+        UTEST_CHECK(message, strcmp(rp->reply, resolutions_cache_data[r].reply) == 0);
+        sprintf(message, "%d != %d (expected: %d)", rp->reply_size, resolutions_cache_data[r].reply_size, resolutions_cache_data[r].reply_size);
+        UTEST_CHECK(message, rp->reply_size == resolutions_cache_data[r].reply_size);
+    }
+    UTEST_CHECK("the dnsf_ckr_dnsresolvcache_ctx's cache scheme seems broken (rp != NULL).", rp == NULL);
+    del_dnsf_ckr_dnsresolvcache_ctx(resolv);
+    printf("-- passed.\n");
+    return NULL;
+}
+
 char *run_tests() {
     printf("running unit tests...\n\n");
     UTEST_RUN(dnsf_ckr_victims_ctx_tests);
@@ -619,6 +855,7 @@ char *run_tests() {
     UTEST_RUN(dnsf_ckr_hostnames_set_ctx_tests);
     UTEST_RUN(dnsf_ckr_fakenameserver_ctx_tests);
     UTEST_RUN(dnsf_ckr_realdnstransactions_ctx_tests);
+    UTEST_RUN(dnsf_ckr_dnsresolvcache_ctx_tests);
     UTEST_RUN(dnsf_ckr_ip2num_test);
     UTEST_RUN(dnsf_ckr_is_valid_ipv4_test);
     UTEST_RUN(dnsf_ckr_ethernet_buffer_parsing_test);

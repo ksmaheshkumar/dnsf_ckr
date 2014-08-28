@@ -31,6 +31,10 @@ dnsf_ckr_unit_tests.prologue() {
         $i = $i + 1;
     }
     hefesto.sys.cd($old_cwd);
+    if (hefesto.sys.os_name() == "linux" ||
+        hefesto.sys.os_name() == "freebsd") {
+        $ldflags.add_item("-lpthread");
+    }
 }
 
 dnsf_ckr_unit_tests.epilogue() {

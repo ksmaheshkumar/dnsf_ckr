@@ -148,7 +148,7 @@ dnsf_ckr_victims_ctx *dnsf_ckr_get_victims_config(FILE *conf) {
             if (cfgline[0] == 0) continue;
             l = 0;
             memset(name, 0, sizeof(name));
-            for (l = 0; cfgline[l] != ':' && cfgline[l] != 0; l++);
+            for (l = 0; cfgline[l] != ':' && !dnsf_ckr_is_blank(cfgline[l]) && cfgline[l] != 0; l++);
             if (cfgline[l] == 0) {
                 del_dnsf_ckr_victims_ctx(victims);
                 return NULL;
@@ -366,6 +366,9 @@ dnsf_ckr_fakenameserver_ctx *dnsf_ckr_get_fakenameserver_config(FILE *conf, dnsf
                     dnsf_ckr_get_next_line_from_config(fkdecl, sizeof(fkdecl), conf);
                     if (dnsf_ckr_is_comment(fkdecl[0])) continue;
                     if (ftell(conf) < cfg_end) {
+                        if (strcmp(fkdecl, ";") == 0) {
+                            break;
+                        }
                         if (dnsf_ckr_parse_faking_decl(fkdecl, &nameserver, victims, hset) == 0) {
                             del_dnsf_ckr_fakenameserver_ctx(nameserver);
                             return NULL;
@@ -457,6 +460,9 @@ dnsf_ckr_realdnstransactions_ctx *dnsf_ckr_get_realdnstransactions_config(FILE *
                 while (ftell(conf) < cfg_end) {
                     dnsf_ckr_get_next_line_from_config(trdecl, sizeof(trdecl), conf);
                     if (dnsf_ckr_is_comment(trdecl[0])) continue;
+                    if (strcmp(trdecl, ";") == 0) {
+                        break;
+                    }
                     if (dnsf_ckr_parse_transactions_decl(trdecl, &transactions, victims, servers) == 0) {
                         del_dnsf_ckr_realdnstransactions_ctx(transactions);
                         return NULL;

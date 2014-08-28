@@ -253,3 +253,57 @@ void del_dnsf_ckr_realdnstransactions_ctx(dnsf_ckr_realdnstransactions_ctx *tr) 
         free(p);
     }
 }
+
+dnsf_ckr_dnsresolvcache_ctx *push_resolution_to_dnsf_ckr_dnsresolvcache_ctx(dnsf_ckr_dnsresolvcache_ctx **resolv, size_t max_cache_size, const char *dname, const size_t dname_size, const unsigned char *reply, const size_t reply_size) {
+    dnsf_ckr_dnsresolvcache_ctx *new_item = NULL;
+    new_dnsf_ckr_dnsresolvcache_ctx(new_item);
+    new_item->dname = (char *) dnsf_ckr_getmemory(dname_size + 1);
+    memset(new_item->dname, 0, dname_size + 1);
+    memcpy(new_item->dname, dname, dname_size);
+    new_item->dname_size = dname_size;
+    new_item->reply = (unsigned char *) dnsf_ckr_getmemory(reply_size + 1);
+    memset(new_item->reply, 0, reply_size + 1);
+    memcpy(new_item->reply, reply, reply_size);
+    new_item->reply_size = reply_size;
+    if (count_of_dnsf_ckr_dnsresolvcache_ctx(*resolv) == max_cache_size) {
+        *resolv = pop_back_resolution_from_dnsf_ckr_dnsresolvcache_ctx(resolv);
+    }
+    new_item->next = *resolv;
+    return new_item;
+}
+
+dnsf_ckr_dnsresolvcache_ctx *pop_back_resolution_from_dnsf_ckr_dnsresolvcache_ctx(dnsf_ckr_dnsresolvcache_ctx **resolv) {
+    dnsf_ckr_dnsresolvcache_ctx *p;
+    for (p = *resolv; p->next->next; p = p->next);
+    del_dnsf_ckr_dnsresolvcache_ctx(p->next);
+    p->next = NULL;
+    return *resolv;
+}
+
+dnsf_ckr_dnsresolvcache_ctx *get_dnsf_ckr_dnsresolvcache_ctx_dname(const char *dname, dnsf_ckr_dnsresolvcache_ctx *resolv) {
+    dnsf_ckr_dnsresolvcache_ctx *p;
+    for (p = resolv; p; p = p->next) {
+        if (strcmp(dname, p->dname) == 0) {
+            return p;
+        }
+    }
+    return NULL;
+}
+
+size_t count_of_dnsf_ckr_dnsresolvcache_ctx(dnsf_ckr_dnsresolvcache_ctx *resolv) {
+    size_t items_nr = 0;
+    dnsf_ckr_dnsresolvcache_ctx *p;
+    if (resolv == NULL) return 0;
+    for (p = resolv; p; p = p->next, items_nr++);
+    return items_nr;
+}
+
+void del_dnsf_ckr_dnsresolvcache_ctx(dnsf_ckr_dnsresolvcache_ctx *resolv) {
+    dnsf_ckr_dnsresolvcache_ctx *p, *t;
+    for (p = t = resolv; t; p = t) {
+        t = p->next;
+        free(p->dname);
+        free(p->reply);
+        free(p);
+    }
+}

