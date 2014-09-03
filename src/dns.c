@@ -158,7 +158,6 @@ unsigned char *dnsf_ckr_mk_dnsresponse(size_t *bufsz, const unsigned char *query
     dnsf_ckr_sk conn;
     struct timeval tv;
     struct sockaddr_in conn_in;
-    //socklen_t conn_in_sz = sizeof(conn_in);
     if (bufsz == NULL) {
         return NULL;
     }
@@ -170,14 +169,10 @@ unsigned char *dnsf_ckr_mk_dnsresponse(size_t *bufsz, const unsigned char *query
     conn_in.sin_family = AF_INET;
     conn_in.sin_port = htons(53);
     conn_in.sin_addr.s_addr = htonl(dnsserver_addr);
-    //bufsize = sendto(conn, query, query_size, 0, (struct sockaddr *)&conn_in, sizeof(conn_in));
     bufsize = sendto(conn, query, query_size, 0, (struct sockaddr *)&conn_in, sizeof(conn_in));
     if ((size_t)bufsize == query_size) {
-        //printf("SENT!\n");
         bufsize = -1;
         bufsize = recvfrom(conn, buf, sizeof(buf), 0, NULL, NULL);
-        perror("recvfrom");
-        printf("RECV = %d\n", bufsize);
         if (bufsize > 0) {
             retval = (unsigned char *) dnsf_ckr_getmemory(bufsize);
             memcpy(retval, buf, bufsize);
