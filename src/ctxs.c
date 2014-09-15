@@ -45,6 +45,14 @@ dnsf_ckr_victims_ctx *get_dnsf_ckr_victims_ctx_victim(const char *victim, dnsf_c
     return NULL;
 }
 
+dnsf_ckr_victims_ctx *get_dnsf_ckr_victims_ctx_addr(const unsigned int addr, dnsf_ckr_victims_ctx *victims) {
+    dnsf_ckr_victims_ctx *p;
+    for (p = victims; p; p = p->next) {
+        if (htonl(p->addr) == addr) return p;
+    }
+    return NULL;
+}
+
 void del_dnsf_ckr_victims_ctx(dnsf_ckr_victims_ctx *victims) {
     dnsf_ckr_victims_ctx *p, *t;
     for (p = t = victims; t; p = t) {
@@ -304,6 +312,41 @@ void del_dnsf_ckr_dnsresolvcache_ctx(dnsf_ckr_dnsresolvcache_ctx *resolv) {
         t = p->next;
         free(p->dname);
         free(p->reply);
+        free(p);
+    }
+}
+
+dnsf_ckr_gateways_config_ctx *add_config_to_dnsf_ckr_gateways_config_ctx(dnsf_ckr_gateways_config_ctx *gateways, dnsf_ckr_victims_ctx *victim, dnsf_ckr_servers_ctx *server) {
+    dnsf_ckr_gateways_config_ctx *head = gateways, *p = NULL;
+    if (head == NULL) {
+        new_dnsf_ckr_gateways_config_ctx(head);
+        p = head;
+    } else {
+        p = get_dnsf_ckr_gateways_config_ctx_tail(gateways);
+        new_dnsf_ckr_gateways_config_ctx(p->next);
+        p = p->next;
+    }
+    p->victim = victim;
+    p->server = server;
+    return head;
+}
+
+dnsf_ckr_gateways_config_ctx *get_dnsf_ckr_gateways_config_ctx_tail(dnsf_ckr_gateways_config_ctx *gateways) {
+    dnsf_ckr_gateways_config_ctx *p;
+    for (p = gateways; p->next; p = p->next);
+    return p;
+}
+
+dnsf_ckr_gateways_config_ctx *get_dnsf_ckr_gateways_config_ctx_victim(dnsf_ckr_victims_ctx *victim, dnsf_ckr_gateways_config_ctx *gateways) {
+    dnsf_ckr_gateways_config_ctx *p;
+    for (p = gateways; p->next; p = p->next);
+    return p;
+}
+
+void del_dnsf_ckr_gateways_config_ctx(dnsf_ckr_gateways_config_ctx *gateways) {
+    dnsf_ckr_gateways_config_ctx *p, *t;
+    for (t = p = gateways; t; p = t) {
+        t = p->next;
         free(p);
     }
 }

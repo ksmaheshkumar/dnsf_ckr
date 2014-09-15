@@ -58,12 +58,20 @@
                             (d)->reply = NULL,\
                             (d)->reply_size = 0 )
 
+#define new_dnsf_ckr_gateways_config_ctx(g) ( (g) = (dnsf_ckr_gateways_config_ctx *)\
+                            dnsf_ckr_getmemory(sizeof(dnsf_ckr_gateways_config_ctx)),\
+                            (g)->victim = NULL,\
+                            (g)->server = NULL,\
+                            (g)->gateway_hw_addr = NULL,\
+                            (g)->next = NULL )
+
 // dnsf_ckr_victims_ctx stuff
 
 dnsf_ckr_victims_ctx *add_victim_to_dnsf_ckr_victims_ctx(dnsf_ckr_victims_ctx *victims, const char *name, size_t nsize,
                                                          const char *addr, size_t asize);
 dnsf_ckr_victims_ctx *get_dnsf_ckr_victims_ctx_tail(dnsf_ckr_victims_ctx *victims);
 dnsf_ckr_victims_ctx *get_dnsf_ckr_victims_ctx_victim(const char *victim, dnsf_ckr_victims_ctx *victims);
+dnsf_ckr_victims_ctx *get_dnsf_ckr_victims_ctx_addr(const unsigned int addr, dnsf_ckr_victims_ctx *victims);
 void del_dnsf_ckr_victims_ctx(dnsf_ckr_victims_ctx *victims);
 
 // dnsf_ckr_servers_ctx stuff
@@ -114,5 +122,12 @@ dnsf_ckr_dnsresolvcache_ctx *pop_back_resolution_from_dnsf_ckr_dnsresolvcache_ct
 dnsf_ckr_dnsresolvcache_ctx *get_dnsf_ckr_dnsresolvcache_ctx_dname(const char *dname, dnsf_ckr_dnsresolvcache_ctx *resolv);
 size_t count_of_dnsf_ckr_dnsresolvcache_ctx(dnsf_ckr_dnsresolvcache_ctx *resolv);
 void del_dnsf_ckr_dnsresolvcache_ctx(dnsf_ckr_dnsresolvcache_ctx *resolv);
+
+// dnsf_ckr_gateways_config_ctx stuff
+
+dnsf_ckr_gateways_config_ctx *add_config_to_dnsf_ckr_gateways_config_ctx(dnsf_ckr_gateways_config_ctx *gateways, dnsf_ckr_victims_ctx *victim, dnsf_ckr_servers_ctx *server);
+dnsf_ckr_gateways_config_ctx *get_dnsf_ckr_gateways_config_ctx_tail(dnsf_ckr_gateways_config_ctx *gateways);
+dnsf_ckr_gateways_config_ctx *get_dnsf_ckr_gateways_config_ctx_victim(dnsf_ckr_victims_ctx *victim, dnsf_ckr_gateways_config_ctx *gateways);
+void del_dnsf_ckr_gateways_config_ctx(dnsf_ckr_gateways_config_ctx *gateways);
 
 #endif

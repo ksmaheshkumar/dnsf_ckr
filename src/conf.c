@@ -474,10 +474,11 @@ dnsf_ckr_realdnstransactions_ctx *dnsf_ckr_get_realdnstransactions_config(FILE *
     return transactions;
 }
 
-int dnsf_ckr_get_mac_of_victims_and_servers(dnsf_ckr_victims_ctx **victims, dnsf_ckr_servers_ctx **servers, const char *loiface) {
+int dnsf_ckr_get_mac_of_victims_and_servers(dnsf_ckr_victims_ctx **victims, dnsf_ckr_servers_ctx **servers, dnsf_ckr_gateways_config_ctx **gateways, const char *loiface) {
     int got = 1;
     dnsf_ckr_victims_ctx *vp;
     dnsf_ckr_servers_ctx *sp;
+    dnsf_ckr_gateways_config_ctx *gp;
     printf("dnsf_ckr INFO: now getting all victims MACs... wait...\n");
     for (vp = *victims; vp && got; vp = vp->next) {
         vp->hw_addr = dnsf_ckr_get_mac_by_addr(vp->addr, loiface, 5);
@@ -494,8 +495,89 @@ int dnsf_ckr_get_mac_of_victims_and_servers(dnsf_ckr_victims_ctx **victims, dnsf
         if (!got) {
             printf("dnsf_ckr ERROR: error while was trying to get some MAC's :S ... Why shouldn't you check your conectivity and try again?\n");
         } else {
-            printf("dnsf_ckr INFO: done.\n");
+            if (*gateways != NULL) {
+                printf("dnsf_ckr INFO: now getting gateways MACs... wait...\n");
+                for (gp = *gateways; gp && got; gp = gp->next) {
+                    //temp_buf = dnsf_ckr_get_mac_by_addr(gp->gateway_addr, loiface, 5);
+                    got = (gp->server->hw_addr != NULL);
+                    if (got) {
+                        gp->gateway_hw_addr = dnsf_ckr_mac2byte(gp->server->hw_addr, 6);
+                    }
+                }
+                if (!got) {
+                    printf("dnsf_ckr ERROR: error while was trying to get some MAC's :S ... Why shouldn't you check your conectivity and try again?\n");
+                } else {
+                    printf("dnsf_ckr INFO: done.\n");
+                }
+            }
         }
     }
     return got;
+}
+
+dnsf_ckr_gateways_config_ctx *dnsf_ckr_get_gatewaysconfig_config(FILE *config, dnsf_ckr_victims_ctx *victims, dnsf_ckr_servers_ctx *servers) {
+    dnsf_ckr_gateways_config_ctx *gateways = NULL;
+    dnsf_ckr_victims_ctx *victim = NULL;
+    dnsf_ckr_servers_ctx *server = NULL;
+    long cfg_end = 0;
+    char buf[2][DNSF_CKR_MAX_BUF], c;
+    size_t b = 0;
+    if (config == NULL) {
+        return NULL;
+    }
+    fseek(config, 0L, SEEK_SET);
+    if (dnsf_ckr_find_config_section("gateways-config", config, &cfg_end)) {
+        c = dnsf_ckr_skip_blank(config);
+        if (c != '=') {
+            printf("dnsf_ckr ERROR: expecting '=' token : \"%s\"\n", buf[0]);
+            return 0;
+        }
+        while (ftell(config) < cfg_end) {
+            memset(buf[0], 0, sizeof(buf[0]));
+            memset(buf[1], 0, sizeof(buf[1]));
+            b = 0;
+            c = dnsf_ckr_skip_blank(config);
+            while (!dnsf_ckr_is_blank(c) && ftell(config) < cfg_end && b < sizeof(buf) - 1) {
+                buf[0][b++] = c;
+                c = fgetc(config);
+            }
+            buf[0][b] = 0;
+            if (buf[0][0] == 0) {
+                continue;
+            }
+            victim = get_dnsf_ckr_victims_ctx_victim(buf[0], victims);
+            if (victim == NULL) {
+                printf("dnsf_ckr ERROR: unknown victim : \"%s\"\n", buf[0]);
+                del_dnsf_ckr_gateways_config_ctx(gateways);
+                return NULL;
+            }
+            b = 0;
+            c = dnsf_ckr_skip_blank(config);
+            while (!dnsf_ckr_is_blank(c) && ftell(config) < cfg_end && b < sizeof(buf) - 1) {
+                buf[0][b++] = c;
+                c = fgetc(config);
+            }
+            buf[0][b] = 0;
+            if (strcmp(buf[0], "gateway") != 0) {
+                printf("dnsf_ckr ERROR: \"gateway\" was expected but found : \"%s\"\n", buf[0]);
+                del_dnsf_ckr_gateways_config_ctx(gateways);
+                return NULL;
+            }
+            b  = 0;
+            c = dnsf_ckr_skip_blank(config);
+            while (!dnsf_ckr_is_blank(c) && ftell(config) < cfg_end) {
+                buf[1][b++] = c;
+                c = fgetc(config);
+            }
+            buf[1][b] = 0;
+            server = get_dnsf_ckr_servers_ctx_name(buf[1], servers);
+            if (server == NULL) {
+                printf("dnsf_ckr ERROR: unknown server : \"%s\"\n", buf[1]);
+                del_dnsf_ckr_gateways_config_ctx(gateways);
+                return NULL;
+            }
+            gateways = add_config_to_dnsf_ckr_gateways_config_ctx(gateways, victim, server);
+        }
+    }
+    return gateways;
 }

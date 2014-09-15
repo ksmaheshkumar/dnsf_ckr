@@ -769,6 +769,48 @@ char *dnsf_ckr_config_parsing_intvalues_reading_test() {
     return NULL;
 }
 
+char *dnsf_ckr_config_parsing_gateways_config_test() {
+    const char *data = "dns-servers =\n"
+                       "\tfoo: 192.30.70.15\n"
+                       "\tbar: 192.30.70.16\n"
+                       ";\n\n"
+                       "victims = \n"
+                       "\talice: 127.0.0.1\n"
+                       "\tbob: 127.0.0.2\n"
+                       ";\n\n"
+                       "gateways-config =\n"
+                       "\talice gateway foo\n"
+                       "\tbob gateway bar\n"
+                       ";\n\n";
+    FILE *config = NULL;
+    dnsf_ckr_servers_ctx *servers = NULL;
+    dnsf_ckr_victims_ctx *victims = NULL;
+    dnsf_ckr_gateways_config_ctx *gateways_cfg = NULL;
+    printf("-- dnsf_ckr_config_parsing_gateways_config_test\n");
+    UTEST_CHECK("Unable to write to \"dnsf_ckr-test.conf\"",
+                     write_buffer_to_file(data, strlen(data), "dnsf_ckr-test.conf") == 1);
+    config = fopen("dnsf_ckr-test.conf", "rb");
+    UTEST_CHECK("config == NULL", config != NULL);
+    remove("dnsf_ckr-test.conf");
+    victims = dnsf_ckr_get_victims_config(config);
+    UTEST_CHECK("victims == NULL", victims != NULL);
+    servers = dnsf_ckr_get_servers_config(config);
+    UTEST_CHECK("servers == NULL", servers != NULL);
+    gateways_cfg = dnsf_ckr_get_gatewaysconfig_config(config, victims, servers);
+    UTEST_CHECK("gateways_cfg == NULL", gateways_cfg != NULL);
+    fclose(config);
+    UTEST_CHECK("gateways_cfg->victim != victims", gateways_cfg->victim == victims);
+    UTEST_CHECK("gateways_cfg->server != servers", gateways_cfg->server == servers);
+    UTEST_CHECK("gateways_cfg->next == NULL", gateways_cfg->next != NULL);
+    UTEST_CHECK("gateways_cfg->next->victim != victims", gateways_cfg->next->victim == victims->next);
+    UTEST_CHECK("gateways_cfg->next->server != servers", gateways_cfg->next->server == servers->next);
+    del_dnsf_ckr_victims_ctx(victims);
+    del_dnsf_ckr_servers_ctx(servers);
+    del_dnsf_ckr_gateways_config_ctx(gateways_cfg);
+    printf("-- passed.\n");
+    return NULL;
+}
+
 char *dnsf_ckr_config_parsing_tests() {
     UTEST_RUN(dnsf_ckr_config_parsing_victims_test);
     UTEST_RUN(dnsf_ckr_config_parsing_servers_test);
@@ -776,6 +818,7 @@ char *dnsf_ckr_config_parsing_tests() {
     UTEST_RUN(dnsf_ckr_config_parsing_fakenameserver_test);
     UTEST_RUN(dnsf_ckr_config_parsing_realdnstransactions_test);
     UTEST_RUN(dnsf_ckr_config_parsing_intvalues_reading_test);
+    UTEST_RUN(dnsf_ckr_config_parsing_gateways_config_test);
     return NULL;
 }
 
@@ -847,6 +890,30 @@ char *dnsf_ckr_dnsresolvcache_ctx_tests() {
     return NULL;
 }
 
+char *dnsf_ckr_gateways_config_ctx_tests() {
+    dnsf_ckr_servers_ctx *servers = NULL;
+    dnsf_ckr_victims_ctx *victims = NULL;
+    dnsf_ckr_gateways_config_ctx *gateways_cfg = NULL;
+    printf("-- dnsf_ckr_gateways_config_ctx_tests\n");
+    victims = add_victim_to_dnsf_ckr_victims_ctx(victims, "foo", 3, "127.0.0.1", 9);
+    victims = add_victim_to_dnsf_ckr_victims_ctx(victims, "yyz", 3, "127.0.0.3", 9);
+    servers = add_server_to_dnsf_ckr_servers_ctx(servers, "bar", 3, "127.0.0.2", 9);
+    servers = add_server_to_dnsf_ckr_servers_ctx(servers, "baz", 3, "127.0.0.4", 9);
+    gateways_cfg = add_config_to_dnsf_ckr_gateways_config_ctx(gateways_cfg, victims, servers);
+    gateways_cfg = add_config_to_dnsf_ckr_gateways_config_ctx(gateways_cfg, victims->next, servers->next);
+    UTEST_CHECK("gateways_cfg == NULL", gateways_cfg != NULL);
+    UTEST_CHECK("gateways_cfg->victim != victims", gateways_cfg->victim == victims);
+    UTEST_CHECK("gateways_cfg->server != servers", gateways_cfg->server == servers);
+    UTEST_CHECK("gateways_cfg->next == NULL", gateways_cfg->next != NULL);
+    UTEST_CHECK("gateways_cfg->next->victim != victims->next", gateways_cfg->next->victim == victims->next);
+    UTEST_CHECK("gateways_cfg->next->server != servers->next", gateways_cfg->next->server == servers->next);
+    del_dnsf_ckr_servers_ctx(servers);
+    del_dnsf_ckr_victims_ctx(victims);
+    del_dnsf_ckr_gateways_config_ctx(gateways_cfg);
+    printf("-- passed.\n");
+    return NULL;
+}
+
 char *run_tests() {
     printf("running unit tests...\n\n");
     UTEST_RUN(dnsf_ckr_victims_ctx_tests);
@@ -856,6 +923,7 @@ char *run_tests() {
     UTEST_RUN(dnsf_ckr_fakenameserver_ctx_tests);
     UTEST_RUN(dnsf_ckr_realdnstransactions_ctx_tests);
     UTEST_RUN(dnsf_ckr_dnsresolvcache_ctx_tests);
+    UTEST_RUN(dnsf_ckr_gateways_config_ctx_tests);
     UTEST_RUN(dnsf_ckr_ip2num_test);
     UTEST_RUN(dnsf_ckr_is_valid_ipv4_test);
     UTEST_RUN(dnsf_ckr_ethernet_buffer_parsing_test);

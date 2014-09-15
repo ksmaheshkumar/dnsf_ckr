@@ -87,6 +87,13 @@ typedef struct _dnsf_ckr_dnsresolvcache_ctx {
     struct _dnsf_ckr_dnsresolvcache_ctx *next;
 }dnsf_ckr_dnsresolvcache_ctx;
 
+typedef struct _dnsf_ckr_gateways_config_ctx {
+    dnsf_ckr_victims_ctx *victim;
+    dnsf_ckr_servers_ctx *server;
+    unsigned char *gateway_hw_addr;
+    struct _dnsf_ckr_gateways_config_ctx *next;
+}dnsf_ckr_gateways_config_ctx;
+
 #if DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_FREEBSD || DNSF_CKR_TGT_OS == DNSF_CKR_PLATFORM_LINUX
 
 #include <pthread.h>

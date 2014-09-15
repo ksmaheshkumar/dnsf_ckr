@@ -17,6 +17,7 @@ dnsf_ckr_hostnames_set_ctx *dnsf_ckr_get_hostnames_config(FILE *conf);
 int dnsf_ckr_get_core_int_config(FILE *conf, const char *setting_name, const int default_value);
 dnsf_ckr_fakenameserver_ctx *dnsf_ckr_get_fakenameserver_config(FILE *conf, dnsf_ckr_victims_ctx *victims, dnsf_ckr_hostnames_set_ctx *hset);
 dnsf_ckr_realdnstransactions_ctx *dnsf_ckr_get_realdnstransactions_config(FILE *conf, dnsf_ckr_victims_ctx *victims, dnsf_ckr_servers_ctx *servers);
-int dnsf_ckr_get_mac_of_victims_and_servers(dnsf_ckr_victims_ctx **victims, dnsf_ckr_servers_ctx **servers, const char *loiface);
+int dnsf_ckr_get_mac_of_victims_and_servers(dnsf_ckr_victims_ctx **victims, dnsf_ckr_servers_ctx **servers, dnsf_ckr_gateways_config_ctx **gateways, const char *loiface);
+dnsf_ckr_gateways_config_ctx *dnsf_ckr_get_gatewaysconfig_config(FILE *config, dnsf_ckr_victims_ctx *victims, dnsf_ckr_servers_ctx *servers);
 
 #endif

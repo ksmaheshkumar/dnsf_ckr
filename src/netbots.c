@@ -8,6 +8,7 @@
 #include "netbots.h"
 #include "types.h"
 #include "ctxs.h"
+#include "arp.h"
 #include "arpspf.h"
 #include "if.h"
 #include "arpspf.h"
@@ -30,7 +31,9 @@ struct dnsf_ckr_request_handler_args {
     dnsf_ckr_realdnstransactions_ctx **transactions;
     dnsf_ckr_fakenameserver_ctx **fakeserver;
     dnsf_ckr_dnsresolvcache_ctx **dnscache;
+    dnsf_ckr_gateways_config_ctx **gateways;
     dnsf_ckr_sockio_data_ctx *packet;
+    unsigned char *lo_mac;
     int dnsspf_ttl;
 };
 
@@ -89,13 +92,15 @@ static void *dnsf_ckr_request_handler_routine(void *handler) {
             rawpkt = NULL;
             victim = NULL;
             hostinfo = NULL;
-            action = dnsf_ckr_proc_ip_packet(p->data + 14,
-                                             p->dsize - 14,
+            action = dnsf_ckr_proc_ip_packet(p->data,
+                                             p->dsize,
                                              &rawpkt,
                                              &rawpktsz,
                                              *args->transactions,
                                              *args->fakeserver,
+                                             *args->gateways,
                                              src_mac,
+                                             args->lo_mac,
                                              domain_name,
                                              sizeof(domain_name),
                                              &victim,
@@ -111,7 +116,7 @@ static void *dnsf_ckr_request_handler_routine(void *handler) {
             case dnsf_ckr_action_repass: //  here we only will repass and the layer-1 will be already corrected.
                 //  INFO(Santiago): don't touch... just echoing to the victim's machine what we grabbed..
                 //  ..but first we need to correct the ethernet frame.
-                action = dnsf_ckr_proc_eth_frame(p->data, p->dsize, &rawpkt, &rawpktsz, *args->transactions);
+                //action = dnsf_ckr_proc_eth_frame(p->data, p->dsize, &rawpkt, &rawpktsz, *args->transactions);
                 /*if (action == dnsf_ckr_action_none) {
                     rawpkt = p->data;
                     rawpktsz = p->dsize;
@@ -166,12 +171,16 @@ void *dnsf_ckr_fakeserver_bot_routine(void *vargs) {
     struct dnsf_ckr_bot_routine_ctx *args = (struct dnsf_ckr_bot_routine_ctx *)vargs;
     dnsf_ckr_realdnstransactions_ctx *transactions = (dnsf_ckr_realdnstransactions_ctx *)args->arg[0];
     dnsf_ckr_fakenameserver_ctx *fakeserver = (dnsf_ckr_fakenameserver_ctx *)args->arg[1];
+    dnsf_ckr_gateways_config_ctx *gateways = (dnsf_ckr_gateways_config_ctx *)args->arg[2];
     dnsf_ckr_sockio_data_ctx *packets = NULL, *p;
     dnsf_ckr_dnsresolvcache_ctx *dnscache = NULL;
-    int dnsspf_ttl = *(int *)args->arg[2];
-    int reqhandlers_nr = *(int *)args->arg[3];
+    int dnsspf_ttl = *(int *)args->arg[3];
+    int reqhandlers_nr = *(int *)args->arg[4];
     struct dnsf_ckr_request_handlers *hp = NULL;
+    char *lo_mac = dnsf_ckr_get_iface_mac((char *)args->arg[5]);
+    unsigned char *raw_lo_mac = dnsf_ckr_mac2byte(lo_mac, 6);
     size_t h;
+    free(lo_mac);
     for (h = 0; h < DNSF_CKR_REQ_HANDLERS_NR; h++) {
         g_dnsf_ckr_request_handler[h].busy = 0;
     }
@@ -183,9 +192,11 @@ void *dnsf_ckr_fakeserver_bot_routine(void *vargs) {
             }
             hp->args.transactions = &transactions;
             hp->args.fakeserver = &fakeserver;
+            hp->args.gateways = &gateways;
             hp->args.dnscache = &dnscache;
             hp->args.packet = p;
             hp->args.dnsspf_ttl = dnsspf_ttl;
+            hp->args.lo_mac = raw_lo_mac;
             pthread_attr_init(&hp->handler_attr);
             pthread_create(&hp->handler, &hp->handler_attr, dnsf_ckr_request_handler_routine, hp);
         }
@@ -197,5 +208,6 @@ void *dnsf_ckr_fakeserver_bot_routine(void *vargs) {
         }
     }
     del_dnsf_ckr_dnsresolvcache_ctx(dnscache);
+    free(raw_lo_mac);
     return NULL;
 }
