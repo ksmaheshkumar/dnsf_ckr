@@ -149,7 +149,9 @@ static void *dnsf_ckr_request_handler_routine(void *handler) {
         p->next = NULL;
         del_dnsf_ckr_sockio_data_ctx(p);
     }
+    pthread_mutex_lock(&reqhandler_mtx);
     hp->busy = 0;
+    pthread_mutex_unlock(&reqhandler_mtx);
     return NULL;
 }
 
@@ -162,7 +164,9 @@ static struct dnsf_ckr_request_handlers *dnsf_ckr_get_free_request_handler(const
             hp = &g_dnsf_ckr_request_handler[h];
         }
     }
-    hp->busy = 1;
+    if (hp != NULL) {
+        hp->busy = 1;
+    }
     pthread_mutex_unlock(&reqhandler_mtx);
     return hp;
 }
@@ -187,8 +191,11 @@ void *dnsf_ckr_fakeserver_bot_routine(void *vargs) {
     while (!dnsf_ckr_should_abort()) {
         packets = dnsf_ckr_sock_read();
         for (p = packets; p; p = p->next) {
-            while((hp = dnsf_ckr_get_free_request_handler(reqhandlers_nr)) == NULL) {
+            while((hp = dnsf_ckr_get_free_request_handler(reqhandlers_nr)) == NULL && !dnsf_ckr_should_abort()) {
                 usleep(1);
+            }
+            if (dnsf_ckr_should_abort()) {
+                continue;
             }
             hp->args.transactions = &transactions;
             hp->args.fakeserver = &fakeserver;
