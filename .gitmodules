@@ -1,0 +1,3 @@
+[submodule "src/unit_test/cute"]
+	path = src/unit_test/cute
+	url = git://github.com/rafael-santiago/cute.git

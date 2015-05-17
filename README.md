@@ -1,25 +1,37 @@
 Dnsf_ckr
 --------
 
-(sorry my bad english...)
-
-dnsf_ckr is an application used for messing up with domain names. Until now it works on FreeBSD and Linux.
+``dnsf_ckr`` is an application used for messing up with domain names. Until now it works on FreeBSD and Linux.
 
 The idea here is sniffing victim's dns requests and fake the response as soon as possible than real dns server.
 In this way we can redirect the target machine to anywhere we want.
-
-MuHAuHaUHauHAuHAHuha! :P
 
 ## Warning
 
 This application is only for educational purposes. I wrote it to show how the DNS protocol can be unsecure in some
 cases and I think you should use it with responsibility.
 
+## Cloning this repo
+
+This repository has some submodules then due to it you should:
+
+``git clone https://github.com/rafael-santiago/dnsf_ckr.git --recursive dnsf_ckr``
+
+or
+
+``git clone https://github.com/rafael-santiago/dnsf_ckr.git dnsf_ckr``
+
+``cd dnsf_ckr``
+
+``git submodule update --init``
+
+After this you will be able to build ``dnsf_ckr``
+
 ## How to build it?
 
-In order to build dnsf_ckr you need to use [Hefesto](http://github.com/rafael-santiago/hefesto.git).
+In order to build ``dnsf_ckr`` you need to use [Hefesto](http://github.com/rafael-santiago/hefesto.git).
 
-After follow the steps to install Hefesto in your system, all you need to do (on shell) inside dnsf_ckr src
+After follow the steps to install Hefesto in your system, all you need to do (on shell) inside ``dnsf_ckr`` src
 subdirectory is invoke hefesto. Something like this:
 
     root@zephyr:~/src/dnsf_ckr/src# hefesto
@@ -28,7 +40,7 @@ subdirectory is invoke hefesto. Something like this:
 
 ;)
 
-## Using dnsf_ckr
+## Using ``dnsf_ckr``
 
 At first you need to know three things
 
@@ -36,7 +48,7 @@ At first you need to know three things
     * The victim's real DNS server IP
     * What domain names you wish to spoof
 
-These informations must be supplied to dnsf_ckr through a configuration file.
+These informations must be supplied to ``dnsf_ckr`` through a configuration file.
 
 Suposing that yours victim is called "sheep" and has the ip address "192.30.70.9" and accesses the "www.facebook.com",
 we have the following attack configuration:
@@ -118,7 +130,7 @@ The option --iface indicates the name of the interface that you use to access th
 
 ### What about the dnsf_ckr-core section in .conf file?
 
-Inside this section we can adjust some things related with dnsf_ckr internal system stuff.
+Inside this section we can adjust some things related with ``dnsf_ckr`` internal system stuff.
 
 These are the current entries that you can use to setup the application according your wishes.
 
@@ -131,30 +143,42 @@ These are the current entries that you can use to setup the application accordin
 
 Have fun!
 
-Santiago
-
 
 Dnsf_ckr
 --------
 
-dnsf_ckr é uma aplicação usada para bagunçar com nomes de domínios. Até agora isso funciona no FreeBSD.
+``dnsf_ckr`` é uma aplicação usada para bagunçar com nomes de domínios. Até agora isso funciona no FreeBSD.
 
 A ideia aqui é sniffar as requisições dns da vítima e falsificar a resposta o quanto antes que o servidor dns real.
 Dessa forma é possível redirecionar a máquina alvo para onde nós quisermos.
-
-MuHAuHaUHauHAuHAHuha! :P
 
 ## Aviso
 
 Este aplicativo é para fins educativos apenas. Eu escrevi isso para mostrar como o protocolo DNS pode ser inseguro
 em alguns casos e eu acho que você deveria usar isso com responsabilidade.
 
+## Clonando este repo
+
+Este repositório possui alguns submódulos então por conta disso você deve:
+
+``git clone https://github.com/rafael-santiago/dnsf_ckr.git --recursive dnsf_ckr``
+
+ou
+
+``git clone https://github.com/rafael-santiago/dnsf_ckr.git dnsf_ckr``
+
+``cd dnsf_ckr``
+
+``git submodule update --init``
+
+Depois disso você poderá disparar o build do ``dnsf_ckr``.
+
 ## Como compilar isso?
 
-Para compilar o dnsf_ckr você precisa usar o [Hefesto](http://github.com/rafael-santiago/hefesto.git).
+Para compilar o ``dnsf_ckr`` você precisa usar o [Hefesto](http://github.com/rafael-santiago/hefesto.git).
 
 Depois de seguir os passos para instalar o Hefesto em seu sistema, tudo o que você precisa fazer (no shell)
-dentro do subdiretório src do dnsf_ckr é invocar o hefesto. Algo nessa linha:
+dentro do subdiretório src do ``dnsf_ckr`` é invocar o hefesto. Algo nessa linha:
 
     root@zephyr:~/src/dnsf_ckr/src# hefesto
 
@@ -162,7 +186,7 @@ dentro do subdiretório src do dnsf_ckr é invocar o hefesto. Algo nessa linha:
 
 ;)
 
-## Usando o dnsf_ckr
+## Usando o ``dnsf_ckr``
 
 Inicialmente você precisa saber três coisas
 
@@ -170,7 +194,7 @@ Inicialmente você precisa saber três coisas
     * O endereço ip do servidor DNS real da vítima
     * Quais nomes de domínio você quer spoofar
 
-Essas informações devem ser informadas ao dnsf_ckr através do arquivo de configuração.
+Essas informações devem ser informadas ao ``dnsf_ckr`` através do arquivo de configuração.
 
 Supondo que sua vítima é chamada "sheep" e tem o endereço ip "192.30.70.9" e acessa o "www.facebook.com", nós temos
 a seguinte configuração de ataque:
@@ -252,7 +276,7 @@ A opção --iface indica o nome da interface que você usa para acessar a rede.
 
 ### Qual é da seção dnsf_ckr-core dentro do arquivo .conf?
 
-Dentro dessa seção nós podemos ajustar algumas coisas relacionadas com o sistema interno do dnsf_ckr.
+Dentro dessa seção nós podemos ajustar algumas coisas relacionadas com o sistema interno do ``dnsf_ckr``.
 
 Estas são as entradas que atualmente você pode usar para colocar a aplicação de acordo com o que você precisa.
 
@@ -263,5 +287,3 @@ Estas são as entradas que atualmente você pode usar para colocar a aplicação de 
 | reqhandlers-nr|    int   | Indicar o número de tratadores simultâneos para os pacotes capturados.                   |
 
 Divirta-se!
-
-Santiago
