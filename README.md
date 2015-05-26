@@ -50,7 +50,7 @@ At first you need to know three things
 
 These informations must be supplied to ``dnsf_ckr`` through a configuration file.
 
-Suposing that yours victim is called "sheep" and has the ip address "192.30.70.9" and accesses the "www.facebook.com",
+Supposing that your victim is called "sheep" and has the ip address "192.30.70.9" and accesses the "www.facebook.com",
 we have the following attack configuration:
 
         # dnsf_ckr attack config sample
@@ -85,7 +85,7 @@ we have the following attack configuration:
             sheep sends requests to cheap-server
         ;
 
-Okay, now you want to add a new attack based on a new victim and also direct the "sheep" to other wilder domains:
+Okay, now you want to add a new attack based on a new victim and also redirect the "sheep" to other wilder domains:
 
         victims =
             sheep: 192.30.70.9
@@ -132,7 +132,7 @@ The option --iface indicates the name of the interface that you use to access th
 
 Inside this section we can adjust some things related with ``dnsf_ckr`` internal system stuff.
 
-These are the current entries that you can use to setup the application according your wishes.
+These are the current entries that you can use to setup the application according your preferences.
 
 |   *Entry*     |  *Type*  |                               *Used for*                                                 |
 |:-------------:|:--------:|:----------------------------------------------------------------------------------------:|
