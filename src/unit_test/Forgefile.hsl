@@ -12,8 +12,8 @@ project dnsf_ckr_unit_tests : toolset "gcc-c-app" : $sources, $includes, $cflags
 dnsf_ckr_unit_tests.prologue() {
     var exit_code type int;
     $exit_code = 1;
-    if (hefesto.sys.cd("cute/src")) {
-        $exit_code = hefesto.sys.forge("cute", "Forgefile.hsl", "--obj-output-dir=obj --bin-output-dir=lib");
+    if (hefesto.sys.cd("cutest/src")) {
+        $exit_code = hefesto.sys.forge("cutest", "Forgefile.hsl", "--obj-output-dir=obj --bin-output-dir=lib");
         hefesto.sys.cd("../..");
     }
     if ($exit_code == 0) {
@@ -42,8 +42,11 @@ dnsf_ckr_unit_tests.prologue() {
             hefesto.sys.os_name() == "freebsd") {
             $ldflags.add_item("-lpthread");
         }
-        $ldflags.add_item("cute/src/lib/libcute.a");
-        $includes.add_item("cute/src");
+        $ldflags.add_item("cutest/src/lib/libcutest.a");
+        if (hefesto.sys.os_name() == "linux") {
+            $ldflags.add_item("-ldl");
+        }
+        $includes.add_item("cutest/src");
     } else {
         hefesto.project.abort($exit_code);
     }
